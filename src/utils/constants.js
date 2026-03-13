@@ -1,0 +1,163 @@
+// Constants for Publet — AI Pub Simulation
+
+export const CHUNK_SIZE = 16
+export const RENDER_DISTANCE = 2
+export const BLOCK_SIZE = 1
+
+// Block types
+export const BLOCKS = {
+  AIR: 0,
+  FLOOR_WOOD: 1,
+  FLOOR_TILE: 2,
+  WALL: 3,
+  CARPET: 4,
+  COUNTER: 5,
+  DANCE_FLOOR: 6,
+}
+
+export const BLOCK_COLORS = {}
+
+// Building types (not used but kept for compatibility)
+export const BUILDING_TYPES = []
+
+// Bot definitions — pub roles
+export const BOT_DEFINITIONS = [
+  {
+    id: 'mike',
+    name: 'Mike',
+    emoji: '🍺',
+    color: '#2c3e50',
+    skinColor: '#d4a76a',
+    personality: 'The head bartender. Knows every cocktail in the book, tells great jokes, and has a story for every drink. Tough but warm-hearted.',
+    traits: ['witty', 'experienced', 'warm', 'quick'],
+    voicePitch: 0.85,
+    voiceRate: 0.95,
+    role: 'bartender',
+    station: 'bar',
+  },
+  {
+    id: 'tony',
+    name: 'Tony',
+    emoji: '💪',
+    color: '#1a1a2e',
+    skinColor: '#c68642',
+    personality: 'The bouncer. Big, intimidating, but surprisingly gentle. He checks IDs, keeps order, and quotes philosophy between drink checks.',
+    traits: ['strong', 'calm', 'philosophical', 'protective'],
+    voicePitch: 0.7,
+    voiceRate: 0.8,
+    role: 'bouncer',
+    station: 'entrance',
+  },
+  {
+    id: 'dj_luna',
+    name: 'Luna',
+    emoji: '🎧',
+    color: '#9b59b6',
+    skinColor: '#ffe0bd',
+    personality: 'The DJ. She reads the crowd perfectly, mixes everything from classics to EDM. She is in her own world behind the decks.',
+    traits: ['creative', 'energetic', 'intuitive', 'cool'],
+    voicePitch: 1.2,
+    voiceRate: 1.1,
+    role: 'dj',
+    station: 'stage',
+  },
+  {
+    id: 'jenny',
+    name: 'Jenny',
+    emoji: '🍸',
+    color: '#e74c3c',
+    skinColor: '#f5cba7',
+    personality: 'The waitress. Fast, charming, never spills a drop. She remembers every regular and their favorite order. Secretly writes poetry.',
+    traits: ['charming', 'fast', 'attentive', 'creative'],
+    voicePitch: 1.15,
+    voiceRate: 1.1,
+    role: 'waitress',
+    station: 'dining',
+  },
+  {
+    id: 'dave',
+    name: 'Dave',
+    emoji: '🎰',
+    color: '#27ae60',
+    skinColor: '#e2d1c3',
+    personality: 'A regular who loves the slot machines. "One more spin!" is his catchphrase. Always upbeat even when losing. Buys everyone rounds when he wins.',
+    traits: ['optimistic', 'generous', 'addicted', 'social'],
+    voicePitch: 1.0,
+    voiceRate: 1.05,
+    role: 'customer_slots',
+    station: 'slots',
+  },
+  {
+    id: 'sarah',
+    name: 'Sarah',
+    emoji: '📺',
+    color: '#3498db',
+    skinColor: '#ffcc80',
+    personality: 'A sports fan who comes to watch games on the big TV. She gets very loud during goals and orders nachos constantly. A trivia champion.',
+    traits: ['passionate', 'loud', 'competitive', 'fun'],
+    voicePitch: 1.1,
+    voiceRate: 1.15,
+    role: 'customer_tv',
+    station: 'tv_area',
+  },
+  {
+    id: 'rico',
+    name: 'Rico',
+    emoji: '🕺',
+    color: '#f39c12',
+    skinColor: '#d4a76a',
+    personality: 'A dancer who never misses a beat. He is always near the stage, dancing even when nobody else is. Incredibly charismatic.',
+    traits: ['charismatic', 'energetic', 'showoff', 'friendly'],
+    voicePitch: 0.95,
+    voiceRate: 1.0,
+    role: 'customer_dancer',
+    station: 'dance_floor',
+  },
+  {
+    id: 'old_pete',
+    name: 'Old Pete',
+    emoji: '🍻',
+    color: '#795548',
+    skinColor: '#e2d1c3',
+    personality: 'The oldest regular. Sits at the end of the bar nursing a pint. Has been coming here for 30 years. Tells stories about "the old days". Everyone loves him.',
+    traits: ['wise', 'nostalgic', 'storyteller', 'beloved'],
+    voicePitch: 0.75,
+    voiceRate: 0.75,
+    role: 'customer_regular',
+    station: 'bar',
+  },
+]
+
+export const TIME_SCALE = 60
+export const MISSION_INTERVAL_MS = 90 * 60 * 1000
+
+// Pub locations — coordinates match ChunkManager objects
+export const RESTAURANT_LOCATIONS = {
+  bar: { x: 25, z: 6, name: 'Bar' },
+  bar_end: { x: 38, z: 6, name: 'End of Bar' },
+  entrance: { x: 22, z: 38, name: 'Entrance' },
+  stage: { x: 8, z: 6, name: 'Stage' },
+  microphone: { x: 8, z: 6.5, name: 'Microphone' },
+  dance_floor: { x: 14, z: 12, name: 'Dance Floor' },
+  tv_area: { x: 38, z: 22, name: 'TV Area' },
+  sofa: { x: 37, z: 22, name: 'Sofa' },
+  slots: { x: 40, z: 32, name: 'Slot Machines' },
+  pool_table: { x: 8, z: 28, name: 'Pool Table' },
+  dining: { x: 20, z: 22, name: 'Dining Area' },
+  table_1: { x: 18, z: 18, name: 'Table 1' },
+  table_2: { x: 24, z: 18, name: 'Table 2' },
+  table_3: { x: 18, z: 24, name: 'Table 3' },
+  table_4: { x: 24, z: 24, name: 'Table 4' },
+  table_5: { x: 18, z: 30, name: 'Table 5' },
+  table_6: { x: 24, z: 30, name: 'Table 6' },
+  booth_1: { x: 4, z: 18, name: 'Booth 1' },
+  booth_2: { x: 4, z: 24, name: 'Booth 2' },
+  toilet: { x: 4, z: 36, name: 'Toilets' },
+  sinks: { x: 8, z: 36, name: 'Bathroom Sinks' },
+  kitchen: { x: 42, z: 5, name: 'Kitchen' },
+  food_counter: { x: 39, z: 12, name: 'Food Counter' },
+  fish_tank: { x: 22, z: 1.5, name: 'Fish Tank' },
+  dartboard: { x: 1, z: 32, name: 'Dartboard' },
+  fountain: { x: 22, z: 48, name: 'Fountain' },
+  outside: { x: 22, z: 42, name: 'Outside' },
+}

@@ -1,0 +1,36 @@
+{
+  "name": "botlets-io",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Botlets.io — AI-driven 3D bot simulation world",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "start": "concurrently \"npm run dev\" \"npm run server\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "simplex-noise": "^4.0.3",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.174.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.0",
+    "concurrently": "^9.1.0",
+    "vite": "^6.3.5"
+  }
+}
