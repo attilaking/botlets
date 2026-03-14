@@ -202,33 +202,110 @@ const Kitchen = memo(function Kitchen() {
 // Bar
 // ==========================================
 const Bar = memo(function Bar() {
+  const bottleColors1 = ['#c62828', '#1565c0', '#2e7d32', '#f57f17', '#6a1b9a', '#00838f', '#d84315', '#4527a0', '#ad1457']
+  const bottleColors2 = ['#ef5350', '#42a5f5', '#66bb6a', '#ffee58', '#ab47bc', '#26c6da', '#ff7043', '#7e57c2', '#ec407a']
+  const bottleColors3 = ['#ff8a65', '#4fc3f7', '#81c784', '#fff176', '#ce93d8', '#4dd0e1', '#ffab91', '#9575cd', '#f48fb1']
+
   return (
     <group>
-      {/* Main bar counter */}
+      {/* === BACK WALL === */}
+      <mesh position={[30, 3, 1]} castShadow>
+        <boxGeometry args={[20, 6, 0.3]} />
+        <meshLambertMaterial color="#1a1a2e" />
+      </mesh>
+      {/* Mirror panel behind bottles */}
+      <mesh position={[30, 2.8, 1.2]}>
+        <boxGeometry args={[18, 3.5, 0.05]} />
+        <meshLambertMaterial color="#2a2a4a" emissive="#1a1a3e" emissiveIntensity={0.15} />
+      </mesh>
+
+      {/* === NEON SIGN — "BOTLET BAR" === */}
+      <Html position={[30, 4.8, 1.3]} center distanceFactor={20} transform>
+        <div style={{
+          fontFamily: "'Pacifico', cursive",
+          fontSize: '32px',
+          fontWeight: 'bold',
+          color: '#ff6ec7',
+          textShadow: '0 0 10px #ff6ec7, 0 0 20px #ff6ec7, 0 0 40px #ff1493, 0 0 80px #ff1493',
+          letterSpacing: '4px',
+          userSelect: 'none',
+          whiteSpace: 'nowrap',
+        }}>BOTLET BAR</div>
+      </Html>
+      {/* Neon sign backing board */}
+      <mesh position={[30, 4.8, 1.25]}>
+        <boxGeometry args={[8, 1.2, 0.1]} />
+        <meshLambertMaterial color="#0d0d1a" />
+      </mesh>
+      {/* Neon glow lights under sign */}
+      <mesh position={[30, 4.1, 1.3]}>
+        <boxGeometry args={[16, 0.05, 0.05]} />
+        <meshBasicMaterial color="#ff6ec7" />
+      </mesh>
+
+      {/* === SHELVES (3 tiers) === */}
+      {[2.0, 2.8, 3.5].map((sy, si) => (
+        <group key={`shelf${si}`}>
+          <mesh position={[30, sy, 1.5]}>
+            <boxGeometry args={[18, 0.08, 0.8]} />
+            <meshLambertMaterial color="#5d4037" />
+          </mesh>
+          {/* LED strip under each shelf */}
+          <mesh position={[30, sy - 0.06, 1.9]}>
+            <boxGeometry args={[17, 0.02, 0.02]} />
+            <meshBasicMaterial color={['#ff6ec7', '#00e5ff', '#ffea00'][si]} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* === BOTTLES — 3 rows of 9 === */}
+      {[bottleColors1, bottleColors2, bottleColors3].map((colors, row) => (
+        <group key={`row${row}`}>
+          {colors.map((color, i) => {
+            const bx = 22 + i * 2
+            const by = [2.3, 3.1, 3.8][row]
+            return (
+              <group key={`b${row}-${i}`} position={[bx, by, 1.5]}>
+                {/* Bottle body */}
+                <mesh><cylinderGeometry args={[0.08, 0.1, 0.4, 6]} /><meshLambertMaterial color={color} /></mesh>
+                {/* Bottle neck */}
+                <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[0.04, 0.06, 0.12, 6]} /><meshLambertMaterial color={color} /></mesh>
+                {/* Label */}
+                <mesh position={[0, -0.02, 0.09]}><boxGeometry args={[0.12, 0.15, 0.01]} /><meshLambertMaterial color="#fff" /></mesh>
+              </group>
+            )
+          })}
+        </group>
+      ))}
+
+      {/* === BAR COUNTER === */}
       <mesh position={[30, 1.15, 8]} castShadow><boxGeometry args={[20, 0.18, 1.2]} /><meshLambertMaterial color="#4e342e" /></mesh>
       {/* Bar front panel */}
       <mesh position={[30, 0.55, 8.4]} castShadow><boxGeometry args={[20, 1.1, 0.15]} /><meshLambertMaterial color="#3e2723" /></mesh>
+      {/* Front panel accent strip */}
+      <mesh position={[30, 0.1, 8.42]}><boxGeometry args={[19, 0.04, 0.02]} /><meshBasicMaterial color="#ff6ec7" /></mesh>
       {/* Corner bar piece */}
       <mesh position={[40, 1.15, 6]} castShadow><boxGeometry args={[1.2, 0.18, 4]} /><meshLambertMaterial color="#4e342e" /></mesh>
-      {/* Back shelf (bottles display) */}
+      {/* Back shelf structure */}
       <mesh position={[30, 1.2, 2]} castShadow><boxGeometry args={[18, 1.5, 1]} /><meshLambertMaterial color="#1a1a1a" /></mesh>
-      <mesh position={[30, 2.5, 1.5]}><boxGeometry args={[18, 0.08, 0.8]} /><meshLambertMaterial color="#5d4037" /></mesh>
-      <mesh position={[30, 3.2, 1.5]}><boxGeometry args={[18, 0.08, 0.8]} /><meshLambertMaterial color="#5d4037" /></mesh>
-      {/* Bottles (colored blocks) */}
-      {[22, 24, 26, 28, 30, 32, 34, 36, 38].map((bx, i) => (
-        <group key={i}>
-          <mesh position={[bx, 2.2, 1.5]}><boxGeometry args={[0.2, 0.5, 0.2]} /><meshLambertMaterial color={['#c62828', '#1565c0', '#2e7d32', '#f57f17', '#6a1b9a', '#00838f', '#d84315', '#4527a0', '#ad1457'][i]} /></mesh>
-          <mesh position={[bx + 0.6, 2.9, 1.5]}><boxGeometry args={[0.2, 0.5, 0.2]} /><meshLambertMaterial color={['#ef5350', '#42a5f5', '#66bb6a', '#ffee58', '#ab47bc', '#26c6da', '#ff7043', '#7e57c2', '#ec407a'][i]} /></mesh>
-        </group>
-      ))}
-      {/* Beer taps */}
+
+      {/* === BEER TAPS with colored handles === */}
       {[25, 28, 31, 34].map((tx, i) => (
         <group key={i} position={[tx, 1.3, 4]}>
           <mesh position={[0, 0.5, 0]}><boxGeometry args={[0.12, 0.8, 0.12]} /><meshLambertMaterial color="#ffd54f" /></mesh>
-          <mesh position={[0, 0.95, 0]}><sphereGeometry args={[0.12, 6, 6]} /><meshLambertMaterial color="#ffd54f" /></mesh>
+          <mesh position={[0, 0.95, 0]}><sphereGeometry args={[0.12, 6, 6]} /><meshLambertMaterial color={['#e53935', '#ffd54f', '#4caf50', '#2196f3'][i]} emissive={['#e53935', '#ffd54f', '#4caf50', '#2196f3'][i]} emissiveIntensity={0.2} /></mesh>
         </group>
       ))}
-      {/* Bar stools */}
+
+      {/* === GARNISH BOWLS on counter === */}
+      {[24, 32, 37].map((gx, i) => (
+        <group key={`garnish${i}`} position={[gx, 1.3, 7]}>
+          <mesh><cylinderGeometry args={[0.2, 0.15, 0.12, 8]} /><meshLambertMaterial color="#fff" /></mesh>
+          <mesh position={[0, 0.08, 0]}><sphereGeometry args={[0.15, 6, 6, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={['#4caf50', '#ff9800', '#e53935'][i]} /></mesh>
+        </group>
+      ))}
+
+      {/* === BAR STOOLS === */}
       {[22, 24, 26, 28, 30, 32, 34, 36, 38].map((sx, i) => (
         <group key={i} position={[sx, 0, 9.5]}>
           <mesh position={[0, 0.85, 0]}><cylinderGeometry args={[0.22, 0.22, 0.06, 8]} /><meshLambertMaterial color="#5d4037" /></mesh>
