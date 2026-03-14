@@ -57,6 +57,8 @@ function CameraController({ controlsRef }) {
   const selectedBotId = useBotStore(s => s.selectedBotId)
   const bots = useBotStore(s => s.bots)
   const cameraMove = useUIStore(s => s.cameraMove)
+  const cameraZoom = useUIStore(s => s.cameraZoom)
+  const cameraRotate = useUIStore(s => s.cameraRotate)
   const { camera } = useThree()
   const prevSelectedRef = useRef(null)
   const isAnimatingRef = useRef(false)
@@ -69,6 +71,27 @@ function CameraController({ controlsRef }) {
   useFrame((state, delta) => {
     if (!controlsRef.current) return
 
+    // Manual zoom via buttons
+    if (cameraZoom !== 0) {
+      const dir = new THREE.Vector3().subVectors(camera.position, controlsRef.current.target).normalize()
+      const zoomSpeed = 15 * delta * -cameraZoom
+      camera.position.addScaledVector(dir, zoomSpeed)
+      controlsRef.current.update()
+    }
+
+    // Manual rotate via buttons — smooth orbit
+    if (cameraRotate !== 0) {
+      const rotSpeed = 0.6 * delta * cameraRotate
+      const target = controlsRef.current.target
+      const offset = new THREE.Vector3().subVectors(camera.position, target)
+      const angle = Math.atan2(offset.x, offset.z) + rotSpeed
+      const radius = Math.sqrt(offset.x * offset.x + offset.z * offset.z)
+      camera.position.x = target.x + Math.sin(angle) * radius
+      camera.position.z = target.z + Math.cos(angle) * radius
+      camera.lookAt(target)
+      controlsRef.current.update()
+    }
+
     // Camera-relative navigation pad movement
     if (cameraMove) {
       const speed = 25 * delta
@@ -80,7 +103,6 @@ function CameraController({ controlsRef }) {
       const right = new THREE.Vector3()
       right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize()
 
-      // up arrow = forward in camera direction, left = camera left, etc.
       const moveX = cameraMove.x * right.x + (-cameraMove.z) * forward.x
       const moveZ = cameraMove.x * right.z + (-cameraMove.z) * forward.z
 
@@ -144,7 +166,7 @@ export default function App() {
       <div className="canvas-container">
         <Canvas
           shadows
-          camera={{ position: [cx + 20, 25, cz + 20], fov: 50, near: 0.1, far: 300 }}
+          camera={{ position: [cx + 35, 45, cz + 35], fov: 50, near: 0.1, far: 400 }}
           gl={{ antialias: false, powerPreference: 'high-performance' }}
           dpr={[1, 1.5]}
         >

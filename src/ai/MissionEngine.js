@@ -31,19 +31,23 @@ const ROLE_ROUTINES = {
   ],
 
   bouncer: [
-    { action: 'walk', target: { x: 22, z: 38 }, thought: '🚪 Watching the door...', duration: 3000 },
+    { action: 'walk', target: 'pub_entrance', thought: '🚪 Watching the door...', duration: 3000 },
     { action: 'wait', thought: '👀 Checking IDs...', duration: 8000 },
     { action: 'wait', thought: '✅ You\'re good, come on in.', duration: 5000 },
     { action: 'walk', target: { x: 20, z: 36 }, thought: '🚶 Walking the floor...', duration: 4000 },
     { action: 'wait', thought: '👁️ Everything looks calm...', duration: 6000 },
-    { action: 'walk', target: 'toilet', thought: '🚻 Checking the toilets...', duration: 4000 },
+    { action: 'walk', target: 'outside_toilet', thought: '🚻 Checking the outside toilets...', duration: 5000 },
     { action: 'wait', thought: '🧹 Toilets look alright.', duration: 3000 },
-    { action: 'walk', target: { x: 24, z: 38 }, thought: '🚪 Back to the door.', duration: 4000 },
+    { action: 'walk', target: 'garden', thought: '🌿 Quick patrol of the garden...', duration: 5000 },
+    { action: 'wait', thought: '👀 All quiet out here.', duration: 4000 },
+    { action: 'walk', target: 'pub_entrance', thought: '🚪 Back to the door.', duration: 5000 },
     { action: 'wait', thought: '💪 Standing guard.', duration: 7000 },
     { action: 'walk', target: 'pool_table', thought: '🎱 Checking the pool area...', duration: 4000 },
     { action: 'wait', thought: '👀 All good over here.', duration: 4000 },
-    { action: 'walk', target: { x: 22, z: 38 }, thought: '👋 Welcome to Publet!', duration: 3000 },
+    { action: 'walk', target: 'pub_entrance', thought: '👋 Welcome to the pub!', duration: 3000 },
     { action: 'wait', thought: '🛡️ Keeping the peace.', duration: 6000 },
+    { action: 'walk', target: 'pond_bench', thought: '🌳 Checking by the pond...', duration: 5000 },
+    { action: 'wait', thought: '🦆 Ducks are behaving.', duration: 4000 },
   ],
 
   dj: [
@@ -57,10 +61,27 @@ const ROLE_ROUTINES = {
     { action: 'walk', target: { x: 8, z: 4 }, thought: '🎶 Time for the next track...', duration: 3000 },
     { action: 'wait', thought: '🎚️ Mixing into the next song...', duration: 6000 },
     { action: 'wait', thought: '🔥 THE CROWD GOES WILD!', duration: 5000 },
-    { action: 'walk', target: 'bar', thought: '🥤 Quick water break...', duration: 4000 },
-    { action: 'wait', thought: '💧 Staying hydrated!', duration: 3000 },
+    // Off-stage break: bar
+    { action: 'walk', target: 'bar', thought: '🥤 Quick water break at the bar...', duration: 5000 },
+    { action: 'wait', thought: '💧 Staying hydrated!', duration: 4000 },
+    { action: 'wait', thought: '🗣️ Hey Mike, great crowd tonight!', duration: 4000 },
+    // Off-stage: mingle on dancefloor
+    { action: 'walk', target: { x: 12, z: 12 }, thought: '🕺 Joining the crowd for a bit!', duration: 4000 },
+    { action: 'wait', thought: '💃 Love this energy!', duration: 5000 },
+    // Off-stage: pool table
+    { action: 'walk', target: 'pool_table', thought: '🎱 Quick game between sets!', duration: 5000 },
+    { action: 'wait', thought: '🎱 Nice shot!', duration: 4000 },
+    // Off-stage: toilet
+    { action: 'walk', target: 'toilet', thought: '🚻 Quick break...', duration: 4000 },
+    { action: 'wait', thought: '🧼 Back in a moment!', duration: 3000 },
+    // Back to stage
     { action: 'walk', target: { x: 8, z: 4 }, thought: '🎧 Back behind the decks!', duration: 3000 },
     { action: 'wait', thought: '🎵 Smooth transition...', duration: 6000 },
+    { action: 'wait', thought: '🎶 Letting this one ride...', duration: 5000 },
+    { action: 'walk', target: 'microphone', thought: '🎤 Shout out to everyone!', duration: 3000 },
+    { action: 'wait', thought: '🎤 Make some NOISE!!', duration: 4000 },
+    { action: 'walk', target: { x: 8, z: 4 }, thought: '🎧 One more banger!', duration: 3000 },
+    { action: 'wait', thought: '🎵 This is the one...', duration: 6000 },
   ],
 
   waitress: [
@@ -145,8 +166,13 @@ const ROLE_ROUTINES = {
     { action: 'walk', target: { x: 37, z: 10 }, thought: '🪑 Back to my stool.', duration: 3000 },
     { action: 'wait', thought: '🍺 Another pint, Mike!', duration: 5000 },
     { action: 'wait', thought: '📖 Did I ever tell you about...', duration: 5000 },
-    { action: 'walk', target: 'toilet', thought: '🚻 Nature calls...', duration: 4000 },
+    { action: 'walk', target: 'outside_toilet', thought: '🚻 Off to the outside loo...', duration: 5000 },
     { action: 'wait', thought: '🧼 Washing up.', duration: 4000 },
+    { action: 'walk', target: 'garden', thought: '🌿 Fresh air break...', duration: 5000 },
+    { action: 'wait', thought: '🌳 Lovely evening!', duration: 5000 },
+    { action: 'walk', target: 'pond_bench', thought: '🦆 Sit by the pond...', duration: 5000 },
+    { action: 'wait', thought: '😌 Peace and quiet.', duration: 5000 },
+    { action: 'walk', target: 'pub_entrance', thought: '🚶 Heading back inside...', duration: 5000 },
     { action: 'walk', target: 'food_counter', thought: '🍽️ Maybe a little snack...', duration: 4000 },
     { action: 'wait', thought: '🥜 Just some peanuts please.', duration: 4000 },
     { action: 'walk', target: { x: 37, z: 10 }, thought: '🪑 My trusty stool.', duration: 3000 },
@@ -154,6 +180,58 @@ const ROLE_ROUTINES = {
     { action: 'wait', thought: '💤 ...just resting my eyes...', duration: 7000 },
     { action: 'walk', target: 'pool_table', thought: '🎱 Fancy a game?', duration: 4000 },
     { action: 'wait', thought: '🎱 Still got it!', duration: 5000 },
+  ],
+
+  greeter: [
+    { action: 'walk', target: 'pub_entrance', thought: '👋 Welcome, welcome!', duration: 4000 },
+    { action: 'wait', thought: '😊 Come on in, great vibes tonight!', duration: 5000 },
+    { action: 'wait', thought: '🎉 Best pub in town!', duration: 4000 },
+    { action: 'walk', target: 'garden', thought: '🌿 Checking the garden area...', duration: 5000 },
+    { action: 'wait', thought: '👋 Hey there, having a good evening?', duration: 4000 },
+    { action: 'walk', target: 'pond_bench', thought: '🦆 Nice spot by the pond...', duration: 5000 },
+    { action: 'wait', thought: '😄 Beautiful evening, innit?', duration: 4000 },
+    { action: 'walk', target: 'pub_entrance', thought: '🚪 Back to the door...', duration: 5000 },
+    { action: 'wait', thought: '👋 Welcome! Table for two?', duration: 5000 },
+    { action: 'walk', target: 'picnic_table', thought: '🏕️ Checking the picnic area...', duration: 5000 },
+    { action: 'wait', thought: '✨ Everything looking lovely!', duration: 4000 },
+    { action: 'walk', target: 'fountain', thought: '⛲ By the fountain...', duration: 5000 },
+    { action: 'wait', thought: '🎶 *humming happily*', duration: 4000 },
+  ],
+
+  cleaner: [
+    { action: 'walk', target: 'entrance', thought: '🧹 Sweeping the entrance...', duration: 4000 },
+    { action: 'wait', thought: '✨ *sweep sweep sweep*', duration: 5000 },
+    { action: 'walk', target: 'bar', thought: '🧹 Behind the bar needs a clean...', duration: 4000 },
+    { action: 'wait', thought: '🎵 *humming while sweeping*', duration: 5000 },
+    { action: 'walk', target: 'dining', thought: '🧹 Tables need clearing...', duration: 4000 },
+    { action: 'wait', thought: '🍽️ *wipes down tables*', duration: 5000 },
+    { action: 'walk', target: 'toilet', thought: '🧹 Toilets time... yay...', duration: 4000 },
+    { action: 'wait', thought: '🧼 *scrub scrub*', duration: 5000 },
+    { action: 'walk', target: 'dance_floor', thought: '🧹 Dance floor is sticky...', duration: 4000 },
+    { action: 'wait', thought: '💦 *mopping intensifies*', duration: 5000 },
+    { action: 'walk', target: 'pub_entrance', thought: '🧹 Sweeping the front...', duration: 4000 },
+    { action: 'wait', thought: '🍃 *sweeps leaves*', duration: 4000 },
+    { action: 'walk', target: 'outside_toilet', thought: '🧹 Outside loos next...', duration: 5000 },
+    { action: 'wait', thought: '😤 Who made this mess?!', duration: 4000 },
+    { action: 'walk', target: 'kitchen', thought: '🧹 Kitchen floors...', duration: 4000 },
+    { action: 'wait', thought: '✨ Spotless!', duration: 4000 },
+  ],
+
+  policeman: [
+    { action: 'walk', target: 'outside', thought: '👮 Patrolling the area...', duration: 5000 },
+    { action: 'wait', thought: '🔍 Everything looks orderly.', duration: 5000 },
+    { action: 'walk', target: 'garden', thought: '👮 Checking the garden...', duration: 5000 },
+    { action: 'wait', thought: '📋 All clear here.', duration: 4000 },
+    { action: 'walk', target: 'pond_bench', thought: '👮 By the pond area...', duration: 5000 },
+    { action: 'wait', thought: '🦆 Even the ducks are behaving.', duration: 5000 },
+    { action: 'walk', target: 'pub_entrance', thought: '👮 Checking the entrance...', duration: 5000 },
+    { action: 'wait', thought: '✅ No trouble tonight.', duration: 4000 },
+    { action: 'walk', target: 'picnic_table', thought: '👮 Scanning the picnic area...', duration: 5000 },
+    { action: 'wait', thought: '🚔 All quiet on this beat.', duration: 5000 },
+    { action: 'walk', target: 'outside_toilet', thought: '👮 Quick check on the facilities...', duration: 5000 },
+    { action: 'wait', thought: '👀 Nothing suspicious.', duration: 4000 },
+    { action: 'walk', target: 'fountain', thought: '👮 Back to the fountain...', duration: 5000 },
+    { action: 'wait', thought: '☕ Could murder a cuppa right now.', duration: 5000 },
   ],
 }
 
@@ -166,10 +244,10 @@ function getRoutineForBot(bot) {
 function resolveTarget(target) {
   if (typeof target === 'string') {
     const loc = RESTAURANT_LOCATIONS[target]
-    return loc ? [loc.x + Math.random() * 1.5, 1, loc.z + Math.random() * 1.5] : null
+    return loc ? [loc.x + (Math.random() - 0.5) * 3, 1, loc.z + (Math.random() - 0.5) * 3] : null
   }
   if (target && typeof target === 'object') {
-    return [target.x + Math.random() * 0.5, 1, target.z + Math.random() * 0.5]
+    return [target.x + (Math.random() - 0.5) * 2, 1, target.z + (Math.random() - 0.5) * 2]
   }
   return null
 }
@@ -181,10 +259,11 @@ function behaviorTick() {
     if (useBotStore.getState().selectedBotId === bot.id && bot.state === 'talking') return
 
     if (!botBehaviorState[bot.id]) {
+      const routine = getRoutineForBot(bot)
       botBehaviorState[bot.id] = {
-        routineIndex: 0,
-        waitUntil: Date.now() + 2000 + Math.random() * 3000,
-        routine: getRoutineForBot(bot),
+        routineIndex: Math.floor(Math.random() * routine.length),
+        waitUntil: Date.now() + 2000 + Math.random() * 6000,
+        routine,
       }
     }
 
@@ -209,13 +288,13 @@ function behaviorTick() {
         useBotStore.getState().setThoughtBubble(bot.id, step.thought, step.duration || 3000)
       }
       state.routineIndex = (state.routineIndex + 1) % state.routine.length
-      state.waitUntil = now + (step.duration || 3000)
+      state.waitUntil = now + (step.duration || 3000) + Math.random() * 2000
     } else if (step.action === 'wait') {
       if (step.thought) {
         useBotStore.getState().setThoughtBubble(bot.id, step.thought, Math.min(step.duration || 4000, 5000))
       }
       state.routineIndex = (state.routineIndex + 1) % state.routine.length
-      state.waitUntil = now + (step.duration || 5000)
+      state.waitUntil = now + (step.duration || 5000) + Math.random() * 2000
     }
   })
 
@@ -223,7 +302,7 @@ function behaviorTick() {
 }
 
 let lastConversationTime = 0
-const CONVERSATION_COOLDOWN = 20000
+const CONVERSATION_COOLDOWN = 15000
 
 function checkBotEncounters() {
   if (Date.now() - lastConversationTime < CONVERSATION_COOLDOWN) return
@@ -234,17 +313,34 @@ function checkBotEncounters() {
       const b1 = bots[i]
       const b2 = bots[j]
       if (b1.isTalking || b2.isTalking) continue
+      if (b1.state === 'talking' || b2.state === 'talking') continue
       const dx = b1.position[0] - b2.position[0]
       const dz = b1.position[2] - b2.position[2]
       if (Math.sqrt(dx * dx + dz * dz) < 3) {
         lastConversationTime = Date.now()
+
+        // Stop both bots
+        useBotStore.getState().stopBot(b1.id)
+        useBotStore.getState().stopBot(b2.id)
+
+        // Face each other
+        const angle1 = Math.atan2(dx, dz)
+        useBotStore.getState().setBotRotation(b1.id, angle1 + Math.PI)
+        useBotStore.getState().setBotRotation(b2.id, angle1)
+
+        // Set talking state
         useBotStore.getState().setBotState(b1.id, 'talking')
         useBotStore.getState().setBotState(b2.id, 'talking')
+
+        // Show greeting bubbles
+        useBotStore.getState().setThoughtBubble(b1.id, `👋 Hey ${b2.name}!`, 3000)
+        useBotStore.getState().setThoughtBubble(b2.id, `👋 Oh hi ${b1.name}!`, 3000)
+
         generateBotConversation(b1.id, b2.id)
         setTimeout(() => {
           useBotStore.getState().setBotState(b1.id, 'idle')
           useBotStore.getState().setBotState(b2.id, 'idle')
-        }, 12000)
+        }, 10000)
         return
       }
     }

@@ -3,9 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useBotStore from '../stores/botStore'
-import useWorldStore, { WORLD_SIZE, WORLD_DEPTH } from '../stores/worldStore'
+import useWorldStore, { WORLD_SIZE, WORLD_DEPTH, OUTDOOR_DEPTH } from '../stores/worldStore'
 
-const BOUNDARY_MARGIN = 3
+const BOUNDARY_MARGIN = 1
 
 const BotCharacter = memo(function BotCharacter({ bot }) {
   const groupRef = useRef()
@@ -16,6 +16,7 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
   const rightLegRef = useRef()
   const walkTimeRef = useRef(0)
   const stuckCountRef = useRef(0)
+  const detourFailsRef = useRef(0)
   const talkIndicatorRef = useRef()
 
   // Jump state
@@ -23,6 +24,10 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
   
   // Detour state — when blocked, walk a detour direction temporarily
   const detourRef = useRef({ active: false, dirX: 0, dirZ: 0, stepsLeft: 0, originalTarget: null })
+  // Movement timeout — give up if can't reach target in time
+  const moveTimerRef = useRef(0)
+  const lastTargetRef = useRef(null)
+  const closestDistRef = useRef(Infinity)
 
   const updateBotPosition = useBotStore(s => s.updateBotPosition)
   const setBotRotation = useBotStore(s => s.setBotRotation)
@@ -59,7 +64,28 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
       talkIndicatorRef.current.rotation.y += delta * 3
     }
 
-    if (target && bot.isMoving) {
+    if (target && bot.isMoving && bot.state !== 'talking') {
+      // Track movement time — reset when target changes
+      if (lastTargetRef.current !== target) {
+        lastTargetRef.current = target
+        moveTimerRef.current = 0
+        closestDistRef.current = Infinity
+        stuckCountRef.current = 0
+        detourFailsRef.current = 0
+        detour.active = false
+      }
+      moveTimerRef.current += delta
+
+      // Give up after 4 seconds of trying to reach any target
+      if (moveTimerRef.current > 4) {
+        stopBot(bot.id)
+        stuckCountRef.current = 0
+        detourFailsRef.current = 0
+        detour.active = false
+        moveTimerRef.current = 0
+        return
+      }
+
       const speed = bot.moveSpeed * delta
 
       let moveX, moveZ
@@ -78,10 +104,17 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
         const dz = target[2] - pos[2]
         const dist = Math.sqrt(dx * dx + dz * dz)
 
+        // Track closest distance for progress detection
+        if (dist < closestDistRef.current) {
+          closestDistRef.current = dist
+        }
+
         if (dist < 0.8) {
           stopBot(bot.id)
           stuckCountRef.current = 0
+          detourFailsRef.current = 0
           detour.active = false
+          moveTimerRef.current = 0
           groupRef.current.position.set(pos[0], pos[1] + jump.height, pos[2])
           groupRef.current.rotation.y = bot.rotation
           return
@@ -92,7 +125,7 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
       }
 
       const nx = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_SIZE - BOUNDARY_MARGIN, pos[0] + moveX))
-      const nz = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_DEPTH - BOUNDARY_MARGIN, pos[2] + moveZ))
+      const nz = Math.max(BOUNDARY_MARGIN, Math.min(OUTDOOR_DEPTH - BOUNDARY_MARGIN, pos[2] + moveZ))
 
       if (isWalkable(nx, nz)) {
         const ny = getHeightAt(nx, nz) + 1
@@ -102,49 +135,47 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
       } else {
         stuckCountRef.current++
 
-        // SCAN 360° for a clear direction, starting from perpendicular to blocked direction
-        if (stuckCountRef.current > 2) {
+        // SCAN 360° for a clear direction
+        if (stuckCountRef.current > 1) {
           const baseAngle = Math.atan2(moveZ, moveX)
           let foundClear = false
           
-          // Try 16 directions around 360°
-          for (let i = 1; i <= 16; i++) {
-            const angle = baseAngle + (Math.PI / 8) * i * (i % 2 === 0 ? 1 : -1) // alternate left/right
-            const testX = pos[0] + Math.cos(angle) * speed * 3
-            const testZ = pos[2] + Math.sin(angle) * speed * 3
+          // Progressive scan: try further out on each failure
+          const scanRadius = speed * (6 + detourFailsRef.current * 4)
+          
+          // Try 24 directions around 360° 
+          for (let i = 1; i <= 24; i++) {
+            const angle = baseAngle + (Math.PI / 12) * i * (i % 2 === 0 ? 1 : -1)
+            const testX = pos[0] + Math.cos(angle) * scanRadius
+            const testZ = pos[2] + Math.sin(angle) * scanRadius
             const clampedX = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_SIZE - BOUNDARY_MARGIN, testX))
-            const clampedZ = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_DEPTH - BOUNDARY_MARGIN, testZ))
+            const clampedZ = Math.max(BOUNDARY_MARGIN, Math.min(OUTDOOR_DEPTH - BOUNDARY_MARGIN, testZ))
 
             if (isWalkable(clampedX, clampedZ)) {
-              // Take a detour in this direction for 15 steps, then resume targeting
               detour.active = true
               detour.dirX = Math.cos(angle)
               detour.dirZ = Math.sin(angle)
-              detour.stepsLeft = 15
+              detour.stepsLeft = 20 + detourFailsRef.current * 5
               stuckCountRef.current = 0
               foundClear = true
               break
             }
           }
 
-          // If no direction clear at all: jump + find new target
           if (!foundClear) {
-            if (!jump.active) {
-              jump.active = true
-              jump.velocity = 6
-              jump.height = 0
+            detourFailsRef.current++
+          }
+
+          // If stuck too long or too many failed detours, teleport and give up
+          if (!foundClear || stuckCountRef.current > 5 || detourFailsRef.current > 3) {
+            stuckCountRef.current = 0
+            detourFailsRef.current = 0
+            detour.active = false
+            const newTarget = findNearbyWalkable(pos[0], pos[2])
+            if (newTarget) {
+              updateBotPosition(bot.id, [newTarget.x, 1, newTarget.z])
             }
-            
-            if (stuckCountRef.current > 20) {
-              stuckCountRef.current = 0
-              detour.active = false
-              const newTarget = findNearbyWalkable(pos[0], pos[2])
-              if (newTarget) {
-                setBotTarget(bot.id, [newTarget.x, 1, newTarget.z])
-              } else {
-                stopBot(bot.id)
-              }
-            }
+            stopBot(bot.id)
           }
         }
       }
@@ -165,6 +196,12 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
       if (rightArmRef.current) rightArmRef.current.rotation.x *= 0.9
       if (leftLegRef.current) leftLegRef.current.rotation.x *= 0.9
       if (rightLegRef.current) rightLegRef.current.rotation.x *= 0.9
+
+      // Talking animation — bob more energetically
+      if (bot.state === 'talking') {
+        const talkBob = Math.sin(walkTimeRef.current * 4) * 0.05
+        if (bodyRef.current) bodyRef.current.position.y = talkBob
+      }
     }
 
     groupRef.current.position.set(pos[0], pos[1] + jump.height, pos[2])
@@ -273,6 +310,20 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
           <sphereGeometry args={[0.06, 10, 10]} />
           <meshLambertMaterial color={bot.color} emissive={bot.color} emissiveIntensity={0.3} />
         </mesh>
+
+        {/* === TALKING INDICATOR — speech bubble === */}
+        {bot.state === 'talking' && (
+          <group>
+            <Html position={[0.5, 2.4, 0]} center distanceFactor={15}>
+              <div style={{ fontSize: '20px', animation: 'pulse 0.6s ease-in-out infinite', userSelect: 'none' }}>💬</div>
+            </Html>
+            {/* Glow ring around bot when talking */}
+            <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[0.6, 0.8, 16]} />
+              <meshBasicMaterial color="#ffd54f" transparent opacity={0.4} side={THREE.DoubleSide} />
+            </mesh>
+          </group>
+        )}
 
         {/* === ARMS — tiny stubby capsules === */}
         <group ref={leftArmRef} position={[-0.45, 0.95, 0]}>

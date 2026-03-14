@@ -18,7 +18,7 @@ export function TopBar() {
     <div className="top-bar">
       <div className="top-bar-logo">
         <div className="logo-icon">🍺</div>
-        <h1>Botlets.io</h1>
+        <h1>botlets.io</h1>
       </div>
       <div className="top-bar-center">
         <div className="top-bar-stat"><span className="dot" /><span>{activeBots}/{bots.length} active</span></div>
@@ -59,6 +59,16 @@ export function BotSidebar() {
   return (
     <div className="sidebar-right">
       <div className="sidebar-title">🤖 BOTLETS</div>
+      <div
+        className={`bot-card group-chat-card ${!selectedBotId ? 'selected' : ''}`}
+        onClick={() => selectBot(null)}
+      >
+        <div className="bot-avatar" style={{ background: '#4caf5022' }}>💬</div>
+        <div className="bot-info">
+          <div className="bot-name">Town Chat</div>
+          <div className="bot-status">Talk to everyone</div>
+        </div>
+      </div>
       {bots.map(bot => (
         <div
           key={bot.id}
@@ -100,14 +110,14 @@ export function ChatPanel() {
 
   const selectedBot = bots.find(b => b.id === selectedBotId)
 
-  // Filter messages: only show conversation between user and selected bot
+  // Filter messages: per-bot or all in group chat
   const filteredMessages = selectedBotId
     ? chatMessages.filter(msg =>
         msg.sender === 'you' ||
         msg.sender === 'system' ||
         msg.botId === selectedBotId
       )
-    : chatMessages.slice(-8)
+    : chatMessages.slice(-20)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -131,19 +141,34 @@ export function ChatPanel() {
   }, [dragPos])
 
   const handleSend = async () => {
-    if (!input.trim() || !selectedBotId || isProcessing) return
+    if (!input.trim() || isProcessing) return
     const msg = input.trim()
     setInput('')
     setIsProcessing(true)
-    addChatMessage('you', msg, selectedBotId)
-    try {
-      const reply = await chatWithBot(selectedBotId, msg)
-      if (reply) {
-        addChatMessage(selectedBot.name.toLowerCase(), reply, selectedBotId)
-        speak(reply, selectedBot)
+
+    if (selectedBotId) {
+      // Direct message to one bot
+      addChatMessage('you', msg, selectedBotId)
+      try {
+        const reply = await chatWithBot(selectedBotId, msg)
+        if (reply) {
+          addChatMessage(selectedBot.name.toLowerCase(), reply, selectedBotId)
+          speak(reply, selectedBot)
+        }
+      } catch {
+        addChatMessage('system', 'Failed to get response.', selectedBotId)
       }
-    } catch {
-      addChatMessage('system', 'Failed to get response.', selectedBotId)
+    } else {
+      // Group chat — broadcast to all bots
+      addChatMessage('you', msg, null)
+      for (const bot of bots) {
+        try {
+          const reply = await chatWithBot(bot.id, msg)
+          if (reply) {
+            addChatMessage(bot.name.toLowerCase(), reply, bot.id)
+          }
+        } catch { /* skip failed */ }
+      }
     }
     setIsProcessing(false)
   }
@@ -169,6 +194,7 @@ export function ChatPanel() {
           <span className="drag-handle">⠿</span>
           {selectedBot ? (
             <>
+              <button className="chat-back-btn" onClick={(e) => { e.stopPropagation(); useBotStore.getState().selectBot(null) }} title="Back to group chat">←</button>
               <span>{selectedBot.emoji}</span>
               <span className="chat-bot-name">{selectedBot.name}</span>
               <span className="chat-label">{selectedBot.role}</span>
@@ -177,7 +203,7 @@ export function ChatPanel() {
             <>
               <span>💬</span>
               <span className="chat-bot-name">Town Chat</span>
-              <span className="chat-label">click a character</span>
+              <span className="chat-label">all bots</span>
             </>
           )}
         </div>
@@ -205,13 +231,13 @@ export function ChatPanel() {
         <button className={`btn-mic ${isRecording ? 'recording' : ''}`} onClick={handleMic}>🎤</button>
         <input
           className="chat-input"
-          placeholder={selectedBot ? `Talk to ${selectedBot.name}...` : 'Select a character...'}
+          placeholder={selectedBot ? `Talk to ${selectedBot.name}...` : 'Talk to everyone...'}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={!selectedBotId || isProcessing}
+          disabled={isProcessing}
         />
-        <button className="btn-send" onClick={handleSend} disabled={!input.trim() || !selectedBotId || isProcessing}>➤</button>
+        <button className="btn-send" onClick={handleSend} disabled={!input.trim() || isProcessing}>➤</button>
       </div>
     </div>
   )
@@ -263,6 +289,8 @@ export function MissionPanel() {
 // ==========================================
 export function NavigatorPad() {
   const setCameraMove = useUIStore(s => s.setCameraMove)
+  const setCameraZoom = useUIStore(s => s.setCameraZoom)
+  const setCameraRotate = useUIStore(s => s.setCameraRotate)
   const startMove = (dir) => setCameraMove(dir)
   const stopMove = () => setCameraMove(null)
   const btnProps = (dir) => ({
@@ -272,9 +300,24 @@ export function NavigatorPad() {
     onTouchStart: (e) => { e.preventDefault(); startMove(dir) },
     onTouchEnd: stopMove,
   })
+  const zoomProps = (val) => ({
+    onMouseDown: () => setCameraZoom(val),
+    onMouseUp: () => setCameraZoom(0),
+    onMouseLeave: () => setCameraZoom(0),
+    onTouchStart: (e) => { e.preventDefault(); setCameraZoom(val) },
+    onTouchEnd: () => setCameraZoom(0),
+  })
+  const rotateProps = (val) => ({
+    onMouseDown: () => setCameraRotate(val),
+    onMouseUp: () => setCameraRotate(0),
+    onMouseLeave: () => setCameraRotate(0),
+    onTouchStart: (e) => { e.preventDefault(); setCameraRotate(val) },
+    onTouchEnd: () => setCameraRotate(0),
+  })
 
   return (
     <div className="navigator-pad">
+      <div className="nav-hint">🖱️ drag to rotate · scroll to zoom</div>
       <button className="nav-btn nav-up" {...btnProps({ x: 0, z: -1 })}>▲</button>
       <div className="nav-row">
         <button className="nav-btn nav-left" {...btnProps({ x: -1, z: 0 })}>◀</button>
@@ -282,6 +325,12 @@ export function NavigatorPad() {
         <button className="nav-btn nav-right" {...btnProps({ x: 1, z: 0 })}>▶</button>
       </div>
       <button className="nav-btn nav-down" {...btnProps({ x: 0, z: 1 })}>▼</button>
+      <div className="nav-extra-row">
+        <button className="nav-btn nav-small" {...rotateProps(-1)} title="Rotate left">↺</button>
+        <button className="nav-btn nav-small" {...zoomProps(1)} title="Zoom in">+</button>
+        <button className="nav-btn nav-small" {...zoomProps(-1)} title="Zoom out">−</button>
+        <button className="nav-btn nav-small" {...rotateProps(1)} title="Rotate right">↻</button>
+      </div>
     </div>
   )
 }
@@ -310,7 +359,7 @@ export function LoadingScreen() {
 
   return (
     <div className="loading-screen">
-      <div className="loading-logo">Botlets.io</div>
+      <div className="loading-logo">botlets.io</div>
       <div className="loading-bar"><div className="loading-bar-inner" /></div>
       <div className="loading-text">{loadingText}</div>
     </div>

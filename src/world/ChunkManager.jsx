@@ -34,10 +34,36 @@ const Floor = memo(function Floor() {
         <planeGeometry args={[20, 8]} />
         <meshLambertMaterial color="#6d4c3a" />
       </mesh>
-      {/* Outside sidewalk */}
-      <mesh position={[22, -0.06, 42]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[12, 4]} />
-        <meshLambertMaterial color="#78909c" />
+      {/* Timber deck — front of pub */}
+      <mesh position={[22, -0.02, 39]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[42, 3]} />
+        <meshLambertMaterial color="#a1887f" />
+      </mesh>
+      {/* Deck plank lines */}
+      {Array.from({ length: 14 }, (_, i) => (
+        <mesh key={`plank${i}`} position={[2 + i * 3, -0.01, 39]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.04, 3]} />
+          <meshBasicMaterial color="#8d6e63" />
+        </mesh>
+      ))}
+      {/* Outside sidewalk — wraps around the front of the pub */}
+      <mesh position={[22, -0.04, 42]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[46, 4]} />
+        <meshLambertMaterial color="#9e9e9e" />
+      </mesh>
+      {/* Side paths */}
+      <mesh position={[-1, -0.04, 30]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4, 30]} />
+        <meshLambertMaterial color="#9e9e9e" />
+      </mesh>
+      <mesh position={[45, -0.04, 30]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4, 30]} />
+        <meshLambertMaterial color="#9e9e9e" />
+      </mesh>
+      {/* Outdoor grass ground — covers entire area outside pub */}
+      <mesh position={[22, -0.10, 30]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[120, 120]} />
+        <meshLambertMaterial color="#4caf50" />
       </mesh>
     </group>
   )
@@ -263,11 +289,50 @@ const Stage = memo(function Stage() {
 // ==========================================
 function TVArea() {
   const ballRef = useRef()
+  const player1Ref = useRef()
+  const player2Ref = useRef()
+  const player3Ref = useRef()
+  const player4Ref = useRef()
+  const player5Ref = useRef()
+  const player6Ref = useRef()
+  const glowRef = useRef()
+
   useFrame((state) => {
+    const t = state.clock.elapsedTime
+    // Ball — bounces around the pitch
     if (ballRef.current) {
-      const t = state.clock.elapsedTime
-      ballRef.current.position.x = Math.sin(t * 1.3) * 1.5
-      ballRef.current.position.y = Math.cos(t * 1.8) * 0.8
+      ballRef.current.position.z = 22 + Math.sin(t * 1.5) * 2.5
+      ballRef.current.position.y = 3.5 + Math.cos(t * 2.1) * 1.2
+    }
+    // Red team players (move in patterns)
+    if (player1Ref.current) {
+      player1Ref.current.position.z = 20 + Math.sin(t * 0.7) * 1.5
+      player1Ref.current.position.y = 4.2 + Math.cos(t * 0.9) * 0.5
+    }
+    if (player2Ref.current) {
+      player2Ref.current.position.z = 22 + Math.cos(t * 0.5) * 2
+      player2Ref.current.position.y = 3.0 + Math.sin(t * 1.1) * 0.6
+    }
+    if (player3Ref.current) {
+      player3Ref.current.position.z = 24 + Math.sin(t * 0.8 + 1) * 1.2
+      player3Ref.current.position.y = 3.5 + Math.cos(t * 0.6) * 0.8
+    }
+    // Blue team players
+    if (player4Ref.current) {
+      player4Ref.current.position.z = 21 + Math.cos(t * 0.6 + 2) * 1.8
+      player4Ref.current.position.y = 2.5 + Math.sin(t * 0.8) * 0.5
+    }
+    if (player5Ref.current) {
+      player5Ref.current.position.z = 23 + Math.sin(t * 0.9 + 1) * 1.5
+      player5Ref.current.position.y = 4.5 + Math.cos(t * 0.7) * 0.4
+    }
+    if (player6Ref.current) {
+      player6Ref.current.position.z = 22 + Math.cos(t * 1.1) * 2
+      player6Ref.current.position.y = 2.8 + Math.sin(t * 0.5 + 2) * 0.6
+    }
+    // TV glow pulse
+    if (glowRef.current) {
+      glowRef.current.intensity = 0.4 + Math.sin(t * 3) * 0.15
     }
   })
   return (
@@ -285,9 +350,22 @@ function TVArea() {
       <mesh position={[42.03, 5, 22]}><boxGeometry args={[0.02, 0.8, 1.2]} /><meshBasicMaterial color="#fff" transparent opacity={0.5} /></mesh>
       <mesh position={[42.03, 2, 22]}><boxGeometry args={[0.02, 0.8, 1.2]} /><meshBasicMaterial color="#fff" transparent opacity={0.5} /></mesh>
       {/* Animated ball */}
-      <mesh ref={ballRef} position={[42.01, 3.5, 22]}><sphereGeometry args={[0.12, 8, 8]} /><meshBasicMaterial color="#fff" /></mesh>
+      <mesh ref={ballRef} position={[42.0, 3.5, 22]}><sphereGeometry args={[0.15, 8, 8]} /><meshBasicMaterial color="#fff" /></mesh>
+      {/* Red team players */}
+      <mesh ref={player1Ref} position={[42.0, 4.2, 20]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#f44336" /></mesh>
+      <mesh ref={player2Ref} position={[42.0, 3.0, 22]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#f44336" /></mesh>
+      <mesh ref={player3Ref} position={[42.0, 3.5, 24]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#f44336" /></mesh>
+      {/* Blue team players */}
+      <mesh ref={player4Ref} position={[42.0, 2.5, 21]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#2196f3" /></mesh>
+      <mesh ref={player5Ref} position={[42.0, 4.5, 23]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#2196f3" /></mesh>
+      <mesh ref={player6Ref} position={[42.0, 2.8, 22]}><sphereGeometry args={[0.12, 6, 6]} /><meshBasicMaterial color="#2196f3" /></mesh>
+      {/* Scoreboard at top */}
+      <mesh position={[42.01, 5.3, 22]}><boxGeometry args={[0.02, 0.3, 1.8]} /><meshBasicMaterial color="#111" /></mesh>
+      <mesh position={[42.0, 5.3, 21.5]}><boxGeometry args={[0.015, 0.2, 0.3]} /><meshBasicMaterial color="#f44336" /></mesh>
+      <mesh position={[42.0, 5.3, 22.5]}><boxGeometry args={[0.015, 0.2, 0.3]} /><meshBasicMaterial color="#2196f3" /></mesh>
+      <mesh position={[42.0, 5.3, 22]}><boxGeometry args={[0.015, 0.15, 0.15]} /><meshBasicMaterial color="#fff" /></mesh>
       {/* TV glow */}
-      <pointLight position={[41, 3.5, 22]} color="#4caf50" intensity={0.5} distance={6} />
+      <pointLight ref={glowRef} position={[41, 3.5, 22]} color="#4caf50" intensity={0.5} distance={6} />
       {/* TV mount bracket */}
       <mesh position={[42.3, 1.3, 22]}><boxGeometry args={[0.2, 0.1, 2]} /><meshLambertMaterial color="#37474f" /></mesh>
       {/* Sofa — bigger L-shaped */}
@@ -436,7 +514,7 @@ const ParkSurroundings = memo(function ParkSurroundings() {
       ))}
       {/* Park benches — more of them */}
       {[[-4, 18], [-4, 32], [WORLD_SIZE + 4, 12], [WORLD_SIZE + 4, 22], [WORLD_SIZE + 4, 32], [15, -4], [30, -4]].map(([x, z], i) => (
-        <group key={i} position={[x, -0.5, z]} rotation={[0, x < 0 ? Math.PI / 2 : x > 20 ? -Math.PI / 2 : 0, 0]}>
+        <group key={i} position={[x, 0, z]} rotation={[0, x < 0 ? Math.PI / 2 : x > 20 ? -Math.PI / 2 : 0, 0]}>
           <mesh position={[0, 0.5, 0]}><boxGeometry args={[1.8, 0.08, 0.5]} /><meshLambertMaterial color="#5d4037" /></mesh>
           <mesh position={[0, 0.7, -0.2]}><boxGeometry args={[1.8, 0.5, 0.08]} /><meshLambertMaterial color="#5d4037" /></mesh>
           <mesh position={[-0.8, 0.25, 0]}><boxGeometry args={[0.08, 0.5, 0.4]} /><meshLambertMaterial color="#37474f" /></mesh>
@@ -445,18 +523,121 @@ const ParkSurroundings = memo(function ParkSurroundings() {
       ))}
       {/* Lamp posts along path */}
       {[[-6, 5], [-6, 35], [WORLD_SIZE + 6, 5], [WORLD_SIZE + 6, 35], [10, -6], [34, -6]].map(([x, z], i) => (
-        <group key={`lamp${i}`} position={[x, -0.5, z]}>
+        <group key={`lamp${i}`} position={[x, 0, z]}>
           <mesh position={[0, 1.5, 0]}><cylinderGeometry args={[0.06, 0.08, 3, 6]} /><meshLambertMaterial color="#37474f" /></mesh>
           <mesh position={[0, 3.2, 0]}><sphereGeometry args={[0.2, 8, 8]} /><meshLambertMaterial color="#fff9c4" emissive="#ffee58" emissiveIntensity={0.3} /></mesh>
         </group>
       ))}
       {/* Fountain in front of pub */}
-      <group position={[22, -0.5, 48]}>
+      <group position={[22, 0, 48]}>
         <mesh position={[0, 0.4, 0]}><cylinderGeometry args={[1.5, 1.8, 0.8, 12]} /><meshLambertMaterial color="#78909c" /></mesh>
         <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[1.3, 1.3, 0.3, 12]} /><meshBasicMaterial color="#29b6f6" transparent opacity={0.4} /></mesh>
         <mesh position={[0, 1.2, 0]}><cylinderGeometry args={[0.1, 0.15, 1, 6]} /><meshLambertMaterial color="#78909c" /></mesh>
         <mesh position={[0, 1.7, 0]}><cylinderGeometry args={[0.6, 0.7, 0.3, 10]} /><meshLambertMaterial color="#78909c" /></mesh>
         <mesh position={[0, 1.8, 0]}><cylinderGeometry args={[0.5, 0.5, 0.15, 10]} /><meshBasicMaterial color="#29b6f6" transparent opacity={0.4} /></mesh>
+      </group>
+
+      {/* === MORE TREES === */}
+      {[
+        [-14, 5], [-12, 28], [-15, 40], [-8, -8], [-16, 12],
+        [WORLD_SIZE + 12, 8], [WORLD_SIZE + 14, 28], [WORLD_SIZE + 10, 38], [WORLD_SIZE + 16, 16],
+        [5, -12], [15, -14], [28, -12], [38, -10],
+        [5, WORLD_DEPTH + 10], [18, WORLD_DEPTH + 14], [35, WORLD_DEPTH + 8],
+        [-18, -6], [WORLD_SIZE + 18, -6], [-12, WORLD_DEPTH + 10], [WORLD_SIZE + 12, WORLD_DEPTH + 10],
+      ].map(([x, z], i) => (
+        <group key={`et${i}`} position={[x, 0, z]}>
+          <mesh position={[0, 1.5, 0]}><cylinderGeometry args={[0.15, 0.25, 3, 5]} /><meshLambertMaterial color="#5d4037" /></mesh>
+          <mesh position={[0, 3.8, 0]}><coneGeometry args={[1.4 + (i % 5) * 0.15, 2.8 + (i % 3) * 0.4, 6]} /><meshLambertMaterial color={i % 4 === 0 ? '#1b5e20' : i % 4 === 1 ? '#2e7d32' : i % 4 === 2 ? '#388e3c' : '#43a047'} /></mesh>
+        </group>
+      ))}
+
+      {/* === TOILET BUILDING — left side of pub === */}
+      <group position={[-14, -0.12, 35]}>
+        <mesh position={[0, 1.5, 0]}><boxGeometry args={[4, 3, 3]} /><meshLambertMaterial color="#78909c" /></mesh>
+        <mesh position={[0, 3.05, 0]}><boxGeometry args={[4.3, 0.12, 3.3]} /><meshLambertMaterial color="#546e7a" /></mesh>
+        {/* Door */}
+        <mesh position={[0, 1.2, 1.51]}><boxGeometry args={[1.2, 2, 0.05]} /><meshLambertMaterial color="#5d4037" /></mesh>
+        <mesh position={[0.4, 1.2, 1.55]}><sphereGeometry args={[0.06, 6, 6]} /><meshLambertMaterial color="#ffd54f" /></mesh>
+        {/* TOILET sign */}
+        <mesh position={[0, 2.5, 1.52]}><boxGeometry args={[2.5, 0.5, 0.05]} /><meshLambertMaterial color="#1565c0" /></mesh>
+        <Html position={[0, 2.5, 1.6]} center transform scale={0.3}>
+          <div style={{ fontFamily: 'Arial', fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '4px', userSelect: 'none' }}>
+            TOILET
+          </div>
+        </Html>
+        {/* WC icons */}
+        <mesh position={[-0.8, 2.5, 1.55]}><boxGeometry args={[0.3, 0.3, 0.02]} /><meshBasicMaterial color="#fff" /></mesh>
+        <mesh position={[0.8, 2.5, 1.55]}><boxGeometry args={[0.3, 0.3, 0.02]} /><meshBasicMaterial color="#fff" /></mesh>
+        {/* Path to toilet */}
+        <mesh position={[0, 0.07, 3]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[2, 4]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+      </group>
+
+      {/* === DUCK POND — right side behind pub === */}
+      <group position={[WORLD_SIZE + 12, -0.12, -8]}>
+        {/* Pond basin */}
+        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[4, 20]} /><meshBasicMaterial color="#1565c0" transparent opacity={0.5} /></mesh>
+        {/* Pond edge (dirt ring) */}
+        <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[3.8, 4.5, 20]} /><meshLambertMaterial color="#795548" /></mesh>
+        {/* Rocks around edge */}
+        {[[3.5, 1], [-3, 2], [1, -3.5], [-2.5, -2.5], [3.8, -0.5]].map(([rx, rz], i) => (
+          <mesh key={`r${i}`} position={[rx, 0.15, rz]}><sphereGeometry args={[0.3 + i * 0.05, 5, 5]} /><meshLambertMaterial color="#757575" /></mesh>
+        ))}
+        {/* Lily pads */}
+        {[[-1, 0.5], [1.5, -1], [-0.5, -1.8], [2, 1]].map(([lx, lz], i) => (
+          <mesh key={`lily${i}`} position={[lx, 0.15, lz]} rotation={[-Math.PI / 2, 0, i * 0.8]}>
+            <circleGeometry args={[0.3, 8]} /><meshLambertMaterial color="#2e7d32" />
+          </mesh>
+        ))}
+        {/* Reeds */}
+        {[[-3, -1], [2.5, 2.5], [-2, 3]].map(([rx, rz], i) => (
+          <group key={`reed${i}`} position={[rx, 0, rz]}>
+            <mesh position={[0, 0.6, 0]}><cylinderGeometry args={[0.02, 0.02, 1.2, 4]} /><meshLambertMaterial color="#558b2f" /></mesh>
+            <mesh position={[0.08, 0.5, 0]}><cylinderGeometry args={[0.02, 0.02, 1, 4]} /><meshLambertMaterial color="#689f38" /></mesh>
+          </group>
+        ))}
+        {/* Bench facing pond */}
+        <group position={[0, 0, 5.5]}>
+          <mesh position={[0, 0.5, 0]}><boxGeometry args={[1.8, 0.08, 0.5]} /><meshLambertMaterial color="#5d4037" /></mesh>
+          <mesh position={[0, 0.7, -0.2]}><boxGeometry args={[1.8, 0.5, 0.08]} /><meshLambertMaterial color="#5d4037" /></mesh>
+          <mesh position={[-0.8, 0.25, 0]}><boxGeometry args={[0.08, 0.5, 0.4]} /><meshLambertMaterial color="#37474f" /></mesh>
+          <mesh position={[0.8, 0.25, 0]}><boxGeometry args={[0.08, 0.5, 0.4]} /><meshLambertMaterial color="#37474f" /></mesh>
+        </group>
+      </group>
+
+      {/* === HEDGE BUSHES === */}
+      {[
+        [-3, 5], [-3, 12], [-3, 28], [-3, 38],
+        [WORLD_SIZE + 3, 5], [WORLD_SIZE + 3, 12], [WORLD_SIZE + 3, 28], [WORLD_SIZE + 3, 38],
+        [8, -3], [16, -3], [28, -3], [36, -3],
+      ].map(([x, z], i) => (
+        <mesh key={`bush${i}`} position={[x, 0.3, z]}>
+          <sphereGeometry args={[0.8, 6, 6]} />
+          <meshLambertMaterial color={i % 2 === 0 ? '#2e7d32' : '#388e3c'} />
+        </mesh>
+      ))}
+
+      {/* === RUBBISH BINS === */}
+      {[[-5, 20], [WORLD_SIZE + 5, 20], [22, WORLD_DEPTH + 4], [22, -5]].map(([x, z], i) => (
+        <group key={`bin${i}`} position={[x, -0.12, z]}>
+          <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.2, 0.22, 0.8, 8]} /><meshLambertMaterial color="#37474f" /></mesh>
+          <mesh position={[0, 0.95, 0]}><cylinderGeometry args={[0.22, 0.2, 0.1, 8]} /><meshLambertMaterial color="#263238" /></mesh>
+        </group>
+      ))}
+
+      {/* === PICNIC TABLE — behind pub === */}
+      <group position={[10, -0.5, -8]}>
+        <mesh position={[0, 0.65, 0]}><boxGeometry args={[2.5, 0.08, 1]} /><meshLambertMaterial color="#8d6e63" /></mesh>
+        <mesh position={[-0.8, 0.35, 0]}><boxGeometry args={[0.08, 0.6, 0.06]} /><meshLambertMaterial color="#795548" /></mesh>
+        <mesh position={[0.8, 0.35, 0]}><boxGeometry args={[0.08, 0.6, 0.06]} /><meshLambertMaterial color="#795548" /></mesh>
+        <mesh position={[0, 0.4, -0.8]}><boxGeometry args={[2.5, 0.06, 0.35]} /><meshLambertMaterial color="#8d6e63" /></mesh>
+        <mesh position={[0, 0.4, 0.8]}><boxGeometry args={[2.5, 0.06, 0.35]} /><meshLambertMaterial color="#8d6e63" /></mesh>
+      </group>
+
+      {/* === SIGNPOST — near entrance path === */}
+      <group position={[26, -0.5, 46]}>
+        <mesh position={[0, 1.5, 0]}><cylinderGeometry args={[0.04, 0.04, 3, 4]} /><meshLambertMaterial color="#5d4037" /></mesh>
+        <mesh position={[0.6, 2.5, 0]} rotation={[0, 0, 0.1]}><boxGeometry args={[1.5, 0.4, 0.08]} /><meshLambertMaterial color="#fff9c4" /></mesh>
+        <mesh position={[0.5, 2.1, 0]} rotation={[0, 0, -0.08]}><boxGeometry args={[1.3, 0.35, 0.08]} /><meshLambertMaterial color="#fff9c4" /></mesh>
       </group>
     </group>
   )
@@ -544,7 +725,7 @@ function ParkBotlets() {
   return (
     <group>
       {botletData.map((bot, i) => (
-        <group key={i} ref={botletRefs[i]} position={[22, -0.5, 44]}>
+        <group key={i} ref={botletRefs[i]} position={[22, 0, 44]}>
           {/* Capsule body */}
           <mesh position={[0, 0.8, 0]}><capsuleGeometry args={[0.35, 0.7, 10, 14]} /><meshLambertMaterial color={bot.color} /></mesh>
           {/* Belly */}
@@ -902,7 +1083,7 @@ const School = memo(function School() {
 const Motorbikes = memo(function Motorbikes() {
   const bikeColors = ['#d32f2f', '#212121', '#1565c0', '#ff6f00']
   return (
-    <group position={[32, -0.5, 43]}>
+    <group position={[32, 0, 43]}>
       {/* Parking surface */}
       <mesh position={[2, 0.02, 1]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[10, 3]} />
@@ -918,29 +1099,53 @@ const Motorbikes = memo(function Motorbikes() {
       {/* Motorbikes */}
       {bikeColors.map((color, i) => (
         <group key={i} position={[i * 2.2 + 1, 0, 1]} rotation={[0, Math.PI * 0.15 * (i % 2 === 0 ? 1 : -1), 0]}>
-          {/* Frame / body */}
-          <mesh position={[0, 0.55, 0]}><boxGeometry args={[0.3, 0.35, 1.2]} /><meshLambertMaterial color={color} /></mesh>
-          {/* Tank */}
-          <mesh position={[0, 0.75, -0.1]}><boxGeometry args={[0.35, 0.2, 0.5]} /><meshLambertMaterial color={color} /></mesh>
+          {/* Front wheel — torus tire + hub */}
+          <group position={[0, 0.3, -0.55]}>
+            <mesh rotation={[0, Math.PI / 2, 0]}><torusGeometry args={[0.25, 0.06, 8, 16]} /><meshLambertMaterial color="#222" /></mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.08, 0.08, 0.08, 8]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          </group>
+          {/* Rear wheel — torus tire + hub */}
+          <group position={[0, 0.3, 0.5]}>
+            <mesh rotation={[0, Math.PI / 2, 0]}><torusGeometry args={[0.25, 0.07, 8, 16]} /><meshLambertMaterial color="#222" /></mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.08, 0.08, 0.1, 8]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          </group>
+          {/* Frame — diagonal bar connecting wheels */}
+          <mesh position={[0, 0.45, 0]} rotation={[0.15, 0, 0]}><boxGeometry args={[0.08, 0.08, 1.1]} /><meshLambertMaterial color="#333" /></mesh>
+          <mesh position={[0, 0.35, 0.15]} rotation={[-0.3, 0, 0]}><boxGeometry args={[0.08, 0.08, 0.6]} /><meshLambertMaterial color="#333" /></mesh>
+          {/* Engine block */}
+          <mesh position={[0, 0.35, 0]}><boxGeometry args={[0.25, 0.2, 0.35]} /><meshLambertMaterial color="#444" /></mesh>
+          <mesh position={[0, 0.3, 0.05]}><boxGeometry args={[0.3, 0.12, 0.25]} /><meshLambertMaterial color="#555" /></mesh>
+          {/* Fuel tank */}
+          <mesh position={[0, 0.6, -0.1]}><boxGeometry args={[0.3, 0.18, 0.45]} /><meshLambertMaterial color={color} /></mesh>
+          <mesh position={[0, 0.62, -0.1]}><boxGeometry args={[0.26, 0.14, 0.4]} /><meshLambertMaterial color={color} /></mesh>
           {/* Seat */}
-          <mesh position={[0, 0.72, 0.3]}><boxGeometry args={[0.28, 0.08, 0.5]} /><meshLambertMaterial color="#1a1a1a" /></mesh>
-          {/* Front wheel */}
-          <mesh position={[0, 0.28, -0.5]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.28, 0.28, 0.08, 10]} /><meshLambertMaterial color="#333" /></mesh>
-          <mesh position={[0, 0.28, -0.5]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.18, 0.18, 0.09, 8]} /><meshLambertMaterial color="#666" /></mesh>
-          {/* Rear wheel */}
-          <mesh position={[0, 0.28, 0.5]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.28, 0.28, 0.1, 10]} /><meshLambertMaterial color="#333" /></mesh>
-          <mesh position={[0, 0.28, 0.5]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.18, 0.18, 0.11, 8]} /><meshLambertMaterial color="#666" /></mesh>
-          {/* Front forks */}
-          <mesh position={[0, 0.55, -0.45]} rotation={[0.2, 0, 0]}><boxGeometry args={[0.06, 0.5, 0.06]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          <mesh position={[0, 0.58, 0.25]}><boxGeometry args={[0.26, 0.06, 0.4]} /><meshLambertMaterial color="#1a1a1a" /></mesh>
+          {/* Rear fender */}
+          <mesh position={[0, 0.45, 0.45]} rotation={[-0.4, 0, 0]}><boxGeometry args={[0.2, 0.03, 0.3]} /><meshLambertMaterial color={color} /></mesh>
+          {/* Front forks — two prongs */}
+          <mesh position={[0.06, 0.5, -0.45]} rotation={[0.25, 0, 0]}><boxGeometry args={[0.04, 0.45, 0.04]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          <mesh position={[-0.06, 0.5, -0.45]} rotation={[0.25, 0, 0]}><boxGeometry args={[0.04, 0.45, 0.04]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          {/* Front fender */}
+          <mesh position={[0, 0.48, -0.55]} rotation={[0.3, 0, 0]}><boxGeometry args={[0.18, 0.03, 0.3]} /><meshLambertMaterial color={color} /></mesh>
           {/* Handlebars */}
-          <mesh position={[0, 0.85, -0.5]}><boxGeometry args={[0.5, 0.04, 0.04]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          <mesh position={[0, 0.75, -0.5]}><boxGeometry args={[0.5, 0.035, 0.035]} /><meshLambertMaterial color="#9e9e9e" /></mesh>
+          {/* Grips */}
+          <mesh position={[-0.27, 0.75, -0.5]}><boxGeometry args={[0.1, 0.05, 0.05]} /><meshLambertMaterial color="#111" /></mesh>
+          <mesh position={[0.27, 0.75, -0.5]}><boxGeometry args={[0.1, 0.05, 0.05]} /><meshLambertMaterial color="#111" /></mesh>
           {/* Headlight */}
-          <mesh position={[0, 0.65, -0.62]}><sphereGeometry args={[0.07, 6, 6]} /><meshLambertMaterial color="#fff9c4" emissive="#ffee58" emissiveIntensity={0.1} /></mesh>
-          {/* Exhaust */}
-          <mesh position={[0.15, 0.35, 0.4]}><cylinderGeometry args={[0.035, 0.04, 0.5, 6]} rotation={[Math.PI / 2, 0, 0]} /><meshLambertMaterial color="#757575" /></mesh>
-          {/* Mirror */}
-          <mesh position={[-0.25, 0.9, -0.5]}><sphereGeometry args={[0.03, 4, 4]} /><meshBasicMaterial color="#90caf9" /></mesh>
-          <mesh position={[0.25, 0.9, -0.5]}><sphereGeometry args={[0.03, 4, 4]} /><meshBasicMaterial color="#90caf9" /></mesh>
+          <mesh position={[0, 0.6, -0.65]}><sphereGeometry args={[0.07, 6, 6]} /><meshLambertMaterial color="#fff9c4" emissive="#ffee58" emissiveIntensity={0.15} /></mesh>
+          {/* Tail light */}
+          <mesh position={[0, 0.48, 0.6]}><boxGeometry args={[0.12, 0.06, 0.03]} /><meshLambertMaterial color="#f44336" emissive="#f44336" emissiveIntensity={0.2} /></mesh>
+          {/* Exhaust pipe */}
+          <mesh position={[0.14, 0.28, 0.2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.03, 0.035, 0.6, 6]} /><meshLambertMaterial color="#757575" /></mesh>
+          <mesh position={[0.14, 0.28, 0.52]}><sphereGeometry args={[0.04, 5, 5]} /><meshLambertMaterial color="#616161" /></mesh>
+          {/* Mirrors */}
+          <mesh position={[-0.28, 0.82, -0.5]}><boxGeometry args={[0.02, 0.08, 0.02]} /><meshLambertMaterial color="#333" /></mesh>
+          <mesh position={[-0.28, 0.87, -0.5]}><sphereGeometry args={[0.03, 4, 4]} /><meshBasicMaterial color="#90caf9" /></mesh>
+          <mesh position={[0.28, 0.82, -0.5]}><boxGeometry args={[0.02, 0.08, 0.02]} /><meshLambertMaterial color="#333" /></mesh>
+          <mesh position={[0.28, 0.87, -0.5]}><sphereGeometry args={[0.03, 4, 4]} /><meshBasicMaterial color="#90caf9" /></mesh>
+          {/* Kickstand */}
+          <mesh position={[0.1, 0.12, 0.1]} rotation={[0, 0, 0.4]}><boxGeometry args={[0.03, 0.3, 0.03]} /><meshLambertMaterial color="#555" /></mesh>
         </group>
       ))}
       {/* "PARKING" sign */}
@@ -974,6 +1179,35 @@ export default function WorldRenderer() {
       <Decor />
       <Motorbikes />
       <OutsideSign />
+      {/* Large carpet under dining area */}
+      <group>
+        {/* Outer border */}
+        <mesh position={[21, 0.02, 24]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[14, 18]} />
+          <meshLambertMaterial color="#8b1a1a" />
+        </mesh>
+        {/* Inner field */}
+        <mesh position={[21, 0.025, 24]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[12, 16]} />
+          <meshLambertMaterial color="#b22222" />
+        </mesh>
+        {/* Center medallion */}
+        <mesh position={[21, 0.03, 24]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[2.5, 16]} />
+          <meshLambertMaterial color="#daa520" />
+        </mesh>
+        <mesh position={[21, 0.035, 24]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[1.8, 16]} />
+          <meshLambertMaterial color="#8b1a1a" />
+        </mesh>
+        {/* Corner accents */}
+        {[[-5, -7], [5, -7], [-5, 7], [5, 7]].map(([dx, dz], i) => (
+          <mesh key={i} position={[21 + dx, 0.03, 24 + dz]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[1, 8]} />
+            <meshLambertMaterial color="#daa520" />
+          </mesh>
+        ))}
+      </group>
       {/* Dining tables */}
       {[[18, 18], [24, 18], [18, 24], [24, 24], [18, 30], [24, 30]].map(([x, z], i) => (
         <DiningTable key={i} x={x} z={z} />

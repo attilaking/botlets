@@ -65,7 +65,11 @@ const useUIStore = create((set, get) => ({
   
   // Navigator pad
   cameraMove: null, // { x, z } direction
+  cameraZoom: 0,    // -1 zoom out, 0 none, 1 zoom in
+  cameraRotate: 0,  // -1 left, 0 none, 1 right
   setCameraMove: (dir) => set({ cameraMove: dir }),
+  setCameraZoom: (val) => set({ cameraZoom: val }),
+  setCameraRotate: (val) => set({ cameraRotate: val }),
 }))
 
 export default useUIStore

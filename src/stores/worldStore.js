@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { RESTAURANT_LOCATIONS } from '../utils/constants'
 
-// Pub space: 44x44 blocks
+// Pub interior: 44x44 blocks, outdoor area extends to z=65
 export const WORLD_SIZE = 44
 export const WORLD_DEPTH = 44
+export const OUTDOOR_DEPTH = 65
 
 const useWorldStore = create((set, get) => ({
   generated: false,
@@ -14,18 +15,38 @@ const useWorldStore = create((set, get) => ({
     if (get().generated) return
     const collisionMap = new Set()
 
-    // Perimeter walls
+    // Perimeter walls (interior pub + outdoor sides)
     for (let x = 0; x < WORLD_SIZE; x++) {
       collisionMap.add(`${x},0`)
-      collisionMap.add(`${x},${WORLD_DEPTH - 1}`)
     }
-    for (let z = 0; z < WORLD_DEPTH; z++) {
+    // Side walls extend into outdoor area
+    for (let z = 0; z < OUTDOOR_DEPTH; z++) {
       collisionMap.add(`0,${z}`)
       collisionMap.add(`${WORLD_SIZE - 1},${z}`)
     }
-    // Front wall with entrance gap (z=40)
+    // Front wall with wide entrance gap (z=40) — bots can walk outside
     for (let x = 0; x < WORLD_SIZE; x++) {
-      if (x < 19 || x > 25) collisionMap.add(`${x},40`)
+      if (x < 17 || x > 27) collisionMap.add(`${x},40`)
+    }
+
+    // Outdoor collisions — toilet building walls
+    for (let x = 2; x <= 8; x++) {
+      collisionMap.add(`${x},48`)
+      collisionMap.add(`${x},53`)
+    }
+    for (let z = 48; z <= 53; z++) {
+      collisionMap.add(`2,${z}`)
+      collisionMap.add(`8,${z}`)
+    }
+    // Toilet door gap
+    collisionMap.delete('5,48')
+    collisionMap.delete('6,48')
+
+    // Pond edge (east side, near tables area)
+    for (let x = 30; x <= 38; x++) {
+      for (let z = 50; z <= 56; z++) {
+        collisionMap.add(`${x},${z}`)
+      }
     }
 
     // Bar counter TOP surface only (customers can't cross, bartender is behind it)
@@ -108,7 +129,7 @@ const useWorldStore = create((set, get) => ({
     const x = Math.floor(worldX)
     const z = Math.floor(worldZ)
     if (x < 1 || x >= WORLD_SIZE - 1) return false
-    if (z < 1 || z >= WORLD_DEPTH - 1) return false
+    if (z < 1 || z >= OUTDOOR_DEPTH) return false
     return !get().collisionMap.has(`${x},${z}`)
   },
 
