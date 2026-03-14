@@ -2,10 +2,11 @@
 // All walk targets are verified to be in WALKABLE areas
 import useBotStore from '../stores/botStore'
 import useUIStore from '../stores/uiStore'
-import { generateBotConversation } from './BotBrain'
+import { generateBotConversation, generateAutonomousThought } from './BotBrain'
 import { RESTAURANT_LOCATIONS } from '../utils/constants'
 
 let behaviorInterval = null
+let autonomousThoughtInterval = null
 
 // Role routines — all coordinates reference RESTAURANT_LOCATIONS
 const ROLE_ROUTINES = {
@@ -252,6 +253,66 @@ function resolveTarget(target) {
   return null
 }
 
+// Location awareness — determine what zone a bot is in based on position
+function getLocationZone(pos) {
+  if (!pos) return 'unknown'
+  const x = pos[0], z = pos[2]
+  
+  // Outdoor areas
+  if (z > 40) {
+    if (x < 10) return 'outside_toilet'
+    if (x > 25) return 'pond_area'
+    return 'garden'
+  }
+  if (z > 37) return 'pub_entrance'
+  
+  // Indoor areas
+  if (x < 6 && z > 30) return 'toilets'
+  if (x < 6 && z > 16) return 'booths'
+  if (x < 15 && z < 10) return 'stage'
+  if (x < 15 && z >= 10 && z < 16) return 'dance_floor'
+  if (x < 15 && z >= 16 && z < 32) return 'pool_area'
+  if (x >= 20 && x <= 26 && z >= 2 && z <= 10) return 'bar'
+  if (x > 26 && x <= 40 && z >= 2 && z <= 10) return 'bar'
+  if (x >= 35 && z >= 28 && z <= 36) return 'slots'
+  if (x >= 35 && z >= 18 && z < 28) return 'tv_area'
+  if (x >= 40 && z < 10) return 'kitchen'
+  if (x >= 15 && x <= 28 && z >= 16 && z <= 34) return 'dining'
+  
+  return 'pub'
+}
+
+// Mood system — bots have moods that affect their behavior
+const MOODS = ['happy', 'excited', 'focused', 'relaxed', 'tired', 'bored']
+
+function updateBotMood(bot, zone) {
+  const state = botBehaviorState[bot.id]
+  if (!state) return
+  
+  // Update mood based on zone and role
+  const now = Date.now()
+  if (state.lastMoodUpdate && now - state.lastMoodUpdate < 30000) return
+  state.lastMoodUpdate = now
+  
+  const moodMap = {
+    bartender: { bar: 'focused', kitchen: 'focused', dance_floor: 'relaxed' },
+    bouncer: { pub_entrance: 'focused', garden: 'relaxed', toilets: 'bored' },
+    dj: { stage: 'excited', dance_floor: 'excited', bar: 'relaxed' },
+    waitress: { dining: 'focused', bar: 'focused', toilets: 'tired' },
+    customer_slots: { slots: 'excited', bar: 'happy', dining: 'relaxed' },
+    customer_tv: { tv_area: 'excited', bar: 'happy', dance_floor: 'bored' },
+    customer_dancer: { dance_floor: 'excited', stage: 'excited', bar: 'relaxed' },
+    customer_regular: { bar: 'happy', garden: 'relaxed', pool_area: 'excited' },
+    greeter: { pub_entrance: 'happy', garden: 'happy', bar: 'relaxed' },
+    cleaner: { toilets: 'focused', kitchen: 'focused', dance_floor: 'tired' },
+    policeman: { pub_entrance: 'focused', garden: 'relaxed', pond_area: 'relaxed' },
+  }
+  
+  const roleMoods = moodMap[bot.role]
+  state.mood = roleMoods?.[zone] || MOODS[Math.floor(Math.random() * MOODS.length)]
+  state.zone = zone
+}
+
 function behaviorTick() {
   const bots = useBotStore.getState().bots
 
@@ -264,8 +325,15 @@ function behaviorTick() {
         routineIndex: Math.floor(Math.random() * routine.length),
         waitUntil: Date.now() + 2000 + Math.random() * 6000,
         routine,
+        mood: 'happy',
+        zone: 'pub',
+        lastMoodUpdate: 0,
       }
     }
+
+    // Update location awareness and mood
+    const zone = getLocationZone(bot.position)
+    updateBotMood(bot, zone)
 
     const state = botBehaviorState[bot.id]
     const now = Date.now()
@@ -288,13 +356,13 @@ function behaviorTick() {
         useBotStore.getState().setThoughtBubble(bot.id, step.thought, step.duration || 3000)
       }
       state.routineIndex = (state.routineIndex + 1) % state.routine.length
-      state.waitUntil = now + (step.duration || 3000) + Math.random() * 2000
+      state.waitUntil = now + (step.duration || 3000) + Math.random() * 1000
     } else if (step.action === 'wait') {
       if (step.thought) {
         useBotStore.getState().setThoughtBubble(bot.id, step.thought, Math.min(step.duration || 4000, 5000))
       }
       state.routineIndex = (state.routineIndex + 1) % state.routine.length
-      state.waitUntil = now + (step.duration || 5000) + Math.random() * 2000
+      state.waitUntil = now + (step.duration || 5000) + Math.random() * 1000
     }
   })
 
@@ -302,7 +370,7 @@ function behaviorTick() {
 }
 
 let lastConversationTime = 0
-const CONVERSATION_COOLDOWN = 15000
+const CONVERSATION_COOLDOWN = 12000
 
 function checkBotEncounters() {
   if (Date.now() - lastConversationTime < CONVERSATION_COOLDOWN) return
@@ -332,11 +400,23 @@ function checkBotEncounters() {
         useBotStore.getState().setBotState(b1.id, 'talking')
         useBotStore.getState().setBotState(b2.id, 'talking')
 
-        // Show greeting bubbles
-        useBotStore.getState().setThoughtBubble(b1.id, `👋 Hey ${b2.name}!`, 3000)
-        useBotStore.getState().setThoughtBubble(b2.id, `👋 Oh hi ${b1.name}!`, 3000)
+        // Show greeting based on location
+        const encounterZone = getLocationZone(b1.position)
+        const zoneGreetings = {
+          bar: [`🍺 ${b2.name}! Let me buy you a drink!`, `🍻 ${b1.name}! What're you having?`],
+          dance_floor: [`🕺 ${b2.name}! You've got moves!`, `💃 ${b1.name}! This is our song!`],
+          pool_area: [`🎱 ${b2.name}! Fancy a game?`, `🎱 ${b1.name}! I'll break!`],
+          slots: [`🎰 ${b2.name}! Any luck?`, `🤑 ${b1.name}! I'm on a streak!`],
+          tv_area: [`📺 ${b2.name}! You watching the game?`, `⚽ ${b1.name}! Pull up a seat!`],
+          garden: [`🌿 ${b2.name}! Nice evening!`, `🌳 ${b1.name}! Getting some air?`],
+          kitchen: [`👨‍🍳 ${b2.name}! Smells amazing!`, `🍕 ${b1.name}! Want a taste?`],
+          pub_entrance: [`👋 ${b2.name}! Coming or going?`, `🚪 ${b1.name}! Just got here!`],
+        }
+        const greetings = zoneGreetings[encounterZone] || [`👋 Hey ${b2.name}!`, `👋 Oh hi ${b1.name}!`]
+        useBotStore.getState().setThoughtBubble(b1.id, greetings[0], 3000)
+        useBotStore.getState().setThoughtBubble(b2.id, greetings[1], 3000)
 
-        generateBotConversation(b1.id, b2.id)
+        generateBotConversation(b1.id, b2.id, encounterZone)
         setTimeout(() => {
           useBotStore.getState().setBotState(b1.id, 'idle')
           useBotStore.getState().setBotState(b2.id, 'idle')
@@ -348,9 +428,24 @@ function checkBotEncounters() {
 }
 
 export function startMissionEngine() {
-  behaviorInterval = setInterval(behaviorTick, 1500)
+  behaviorInterval = setInterval(behaviorTick, 1000)
+  
+  // Autonomous thoughts — every 20s a random bot has an AI-generated thought
+  autonomousThoughtInterval = setInterval(() => {
+    const bots = useBotStore.getState().bots
+    const idleBots = bots.filter(b => b.state !== 'talking' && !b.isTalking && !b.thoughtBubble)
+    if (idleBots.length === 0) return
+    
+    const bot = idleBots[Math.floor(Math.random() * idleBots.length)]
+    const state = botBehaviorState[bot.id]
+    const zone = getLocationZone(bot.position)
+    const mood = state?.mood || 'happy'
+    
+    generateAutonomousThought(bot, zone, mood)
+  }, 20000)
 }
 
 export function stopMissionEngine() {
   if (behaviorInterval) clearInterval(behaviorInterval)
+  if (autonomousThoughtInterval) clearInterval(autonomousThoughtInterval)
 }

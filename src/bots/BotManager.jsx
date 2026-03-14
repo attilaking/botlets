@@ -242,82 +242,62 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
             <cylinderGeometry args={[0.03, 0.03, 7, 8]} />
             <meshBasicMaterial color={bot.color} transparent opacity={0.4} />
           </mesh>
-          <mesh position={[0, 2.2, 0]}>
-            <sphereGeometry args={[0.18, 12, 12]} />
+          <mesh position={[0, 2.4, 0]}>
+            <boxGeometry args={[0.2, 0.2, 0.2]} />
             <meshLambertMaterial color={bot.color} emissive={bot.color} emissiveIntensity={0.6} />
-          </mesh>
-          <mesh position={[0, 9, 0]}>
-            <sphereGeometry args={[0.2, 12, 12]} />
-            <meshLambertMaterial color={bot.color} emissive={bot.color} emissiveIntensity={0.8} />
           </mesh>
         </group>
 
-        {/* === PILL BODY — main capsule shape === */}
-        <mesh position={[0, 0.8, 0]} castShadow>
-          <capsuleGeometry args={[0.4, 0.8, 12, 16]} />
+        {/* === ROBLOX HEAD — blocky box === */}
+        <mesh position={[0, 1.55, 0]} castShadow>
+          <boxGeometry args={[0.7, 0.7, 0.7]} />
+          <meshLambertMaterial color={bot.skinColor} />
+        </mesh>
+
+        {/* === FACE === */}
+        {/* Left eye */}
+        <group position={[-0.14, 1.6, 0.36]}>
+          <mesh><boxGeometry args={[0.14, 0.16, 0.02]} /><meshBasicMaterial color="#fff" /></mesh>
+          <mesh position={[0.02, 0.01, 0.01]}><boxGeometry args={[0.07, 0.09, 0.02]} /><meshBasicMaterial color="#111" /></mesh>
+        </group>
+        {/* Right eye */}
+        <group position={[0.14, 1.6, 0.36]}>
+          <mesh><boxGeometry args={[0.14, 0.16, 0.02]} /><meshBasicMaterial color="#fff" /></mesh>
+          <mesh position={[-0.02, 0.01, 0.01]}><boxGeometry args={[0.07, 0.09, 0.02]} /><meshBasicMaterial color="#111" /></mesh>
+        </group>
+        {/* Mouth */}
+        <mesh position={[0, 1.38, 0.36]}>
+          <boxGeometry args={[bot.isTalking ? 0.2 : 0.25, bot.isTalking ? 0.08 : 0.03, 0.02]} />
+          <meshBasicMaterial color={bot.isTalking ? '#e53935' : '#333'} />
+        </mesh>
+
+        {/* === HAT / CAP === */}
+        <mesh position={[0, 1.93, 0]} castShadow>
+          <boxGeometry args={[0.75, 0.12, 0.75]} />
+          <meshLambertMaterial color={bot.color} />
+        </mesh>
+        <mesh position={[0, 2.02, 0]}>
+          <boxGeometry args={[0.6, 0.12, 0.6]} />
           <meshLambertMaterial color={bot.color} />
         </mesh>
 
-        {/* === FACE — big googly staring eyes === */}
-        {/* Left eye */}
-        <group position={[-0.15, 1.15, 0.32]}>
-          <mesh>
-            <sphereGeometry args={[0.16, 14, 14]} />
-            <meshLambertMaterial color="#fff" />
-          </mesh>
-          {/* Pupil — 3D sphere sitting on eye surface, looking up-right */}
-          <mesh position={[0.04, 0.03, 0.14]}>
-            <sphereGeometry args={[0.045, 8, 8]} />
-            <meshBasicMaterial color="#111" />
-          </mesh>
-        </group>
-
-        {/* Right eye — slightly bigger */}
-        <group position={[0.15, 1.18, 0.32]}>
-          <mesh>
-            <sphereGeometry args={[0.18, 14, 14]} />
-            <meshLambertMaterial color="#fff" />
-          </mesh>
-          {/* Pupil — looking down-left for cross-eyed fun */}
-          <mesh position={[-0.05, -0.02, 0.16]}>
-            <sphereGeometry args={[0.05, 8, 8]} />
-            <meshBasicMaterial color="#111" />
-          </mesh>
-        </group>
-
-        {/* Mouth — small cute smile */}
-        <mesh position={[0, 0.92, 0.41]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.06, 0.015, 8, 12, Math.PI]} />
-          <meshBasicMaterial color={bot.isTalking ? '#ff6b6b' : '#444'} />
+        {/* === TORSO — rectangular box === */}
+        <mesh position={[0, 0.85, 0]} castShadow>
+          <boxGeometry args={[0.7, 0.8, 0.45]} />
+          <meshLambertMaterial color={bot.color} />
+        </mesh>
+        {/* Shirt detail */}
+        <mesh position={[0, 0.95, 0.23]}>
+          <boxGeometry args={[0.2, 0.3, 0.01]} />
+          <meshLambertMaterial color="#fff" />
         </mesh>
 
-        {/* Blush cheeks */}
-        <mesh position={[-0.25, 1.0, 0.34]} rotation={[Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.06, 10]} />
-          <meshBasicMaterial color="#ffaaaa" transparent opacity={0.5} />
-        </mesh>
-        <mesh position={[0.25, 1.0, 0.34]} rotation={[Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.06, 10]} />
-          <meshBasicMaterial color="#ffaaaa" transparent opacity={0.5} />
-        </mesh>
-
-        {/* === HAIR / ANTENNA — little sprout on top === */}
-        <mesh position={[0, 1.65, 0]}>
-          <cylinderGeometry args={[0.02, 0.02, 0.2, 6]} />
-          <meshLambertMaterial color="#555" />
-        </mesh>
-        <mesh position={[0, 1.78, 0]}>
-          <sphereGeometry args={[0.06, 10, 10]} />
-          <meshLambertMaterial color={bot.color} emissive={bot.color} emissiveIntensity={0.3} />
-        </mesh>
-
-        {/* === TALKING INDICATOR — speech bubble === */}
+        {/* === TALKING INDICATOR === */}
         {bot.state === 'talking' && (
           <group>
-            <Html position={[0.5, 2.4, 0]} center distanceFactor={15}>
+            <Html position={[0.5, 2.5, 0]} center distanceFactor={15}>
               <div style={{ fontSize: '20px', animation: 'pulse 0.6s ease-in-out infinite', userSelect: 'none' }}>💬</div>
             </Html>
-            {/* Glow ring around bot when talking */}
             <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
               <ringGeometry args={[0.6, 0.8, 16]} />
               <meshBasicMaterial color="#ffd54f" transparent opacity={0.4} side={THREE.DoubleSide} />
@@ -325,56 +305,52 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
           </group>
         )}
 
-        {/* === ARMS — tiny stubby capsules === */}
-        <group ref={leftArmRef} position={[-0.45, 0.95, 0]}>
-          <mesh position={[0, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.08, 0.2, 8, 8]} />
-            <meshLambertMaterial color={bot.skinColor} />
+        {/* === ARMS — blocky rectangles === */}
+        <group ref={leftArmRef} position={[-0.52, 1.0, 0]}>
+          <mesh position={[0, -0.25, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.55, 0.25]} />
+            <meshLambertMaterial color={bot.color} />
           </mesh>
-          {/* Tiny mitten hand */}
-          <mesh position={[0, -0.38, 0]}>
-            <sphereGeometry args={[0.08, 10, 10]} />
+          <mesh position={[0, -0.55, 0]}>
+            <boxGeometry args={[0.18, 0.12, 0.22]} />
             <meshLambertMaterial color={bot.skinColor} />
           </mesh>
         </group>
-        <group ref={rightArmRef} position={[0.45, 0.95, 0]}>
-          <mesh position={[0, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.08, 0.2, 8, 8]} />
-            <meshLambertMaterial color={bot.skinColor} />
+        <group ref={rightArmRef} position={[0.52, 1.0, 0]}>
+          <mesh position={[0, -0.25, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.55, 0.25]} />
+            <meshLambertMaterial color={bot.color} />
           </mesh>
-          {/* Tiny mitten hand */}
-          <mesh position={[0, -0.38, 0]}>
-            <sphereGeometry args={[0.08, 10, 10]} />
+          <mesh position={[0, -0.55, 0]}>
+            <boxGeometry args={[0.18, 0.12, 0.22]} />
             <meshLambertMaterial color={bot.skinColor} />
           </mesh>
         </group>
 
-        {/* === LEGS — short stubby cylinders with round shoes === */}
-        <group ref={leftLegRef} position={[-0.15, 0.15, 0]}>
-          <mesh position={[0, -0.15, 0]} castShadow>
-            <capsuleGeometry args={[0.07, 0.12, 6, 8]} />
-            <meshLambertMaterial color={bot.color} />
+        {/* === LEGS — blocky rectangles === */}
+        <group ref={leftLegRef} position={[-0.18, 0.25, 0]}>
+          <mesh position={[0, -0.2, 0]} castShadow>
+            <boxGeometry args={[0.25, 0.5, 0.3]} />
+            <meshLambertMaterial color="#37474f" />
           </mesh>
-          {/* Round shoe */}
-          <mesh position={[0, -0.3, 0.04]}>
-            <sphereGeometry args={[0.1, 10, 10]} />
-            <meshLambertMaterial color="#2c2c2c" />
+          <mesh position={[0, -0.48, 0.05]}>
+            <boxGeometry args={[0.28, 0.1, 0.38]} />
+            <meshLambertMaterial color="#212121" />
           </mesh>
         </group>
-        <group ref={rightLegRef} position={[0.15, 0.15, 0]}>
-          <mesh position={[0, -0.15, 0]} castShadow>
-            <capsuleGeometry args={[0.07, 0.12, 6, 8]} />
-            <meshLambertMaterial color={bot.color} />
+        <group ref={rightLegRef} position={[0.18, 0.25, 0]}>
+          <mesh position={[0, -0.2, 0]} castShadow>
+            <boxGeometry args={[0.25, 0.5, 0.3]} />
+            <meshLambertMaterial color="#37474f" />
           </mesh>
-          {/* Round shoe */}
-          <mesh position={[0, -0.3, 0.04]}>
-            <sphereGeometry args={[0.1, 10, 10]} />
-            <meshLambertMaterial color="#2c2c2c" />
+          <mesh position={[0, -0.48, 0.05]}>
+            <boxGeometry args={[0.28, 0.1, 0.38]} />
+            <meshLambertMaterial color="#212121" />
           </mesh>
         </group>
 
         {/* Name label */}
-        <Html position={[0, 2.2, 0]} center distanceFactor={15} style={{ pointerEvents: 'none' }}>
+        <Html position={[0, 2.4, 0]} center distanceFactor={15} style={{ pointerEvents: 'none' }}>
           <div style={{ background: 'rgba(0,0,0,0.75)', color: '#fff', padding: '3px 10px', borderRadius: '10px', fontSize: '11px', fontFamily: 'Inter, sans-serif', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', backdropFilter: 'blur(4px)' }}>
             {bot.emoji} {bot.name}
           </div>
@@ -382,17 +358,17 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
 
         {/* Talking indicator — bouncing dots */}
         {bot.isTalking && (
-          <group ref={talkIndicatorRef} position={[0, 2.5, 0]}>
+          <group ref={talkIndicatorRef} position={[0, 2.7, 0]}>
             <mesh position={[0.18, 0, 0]}>
-              <sphereGeometry args={[0.07, 8, 8]} />
+              <boxGeometry args={[0.1, 0.1, 0.1]} />
               <meshBasicMaterial color="#fff" />
             </mesh>
             <mesh position={[-0.09, 0, 0.15]}>
-              <sphereGeometry args={[0.055, 8, 8]} />
+              <boxGeometry args={[0.08, 0.08, 0.08]} />
               <meshBasicMaterial color="#ddd" />
             </mesh>
             <mesh position={[-0.09, 0, -0.15]}>
-              <sphereGeometry args={[0.045, 8, 8]} />
+              <boxGeometry args={[0.06, 0.06, 0.06]} />
               <meshBasicMaterial color="#bbb" />
             </mesh>
           </group>
