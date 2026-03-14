@@ -282,25 +282,35 @@ const BotCharacter = memo(function BotCharacter({ bot }) {
 
         {/* === FACE — big googly eyes with goggles === */}
         {/* Left eye — goggle rim */}
-        <group position={[-0.15, 1.15, 0.3]}>
-          <mesh><cylinderGeometry args={[0.16, 0.16, 0.08, 16]} /><meshLambertMaterial color="#777" /></mesh>
-          {/* Eyeball */}
-          <mesh position={[0, 0, 0.04]}><sphereGeometry args={[0.14, 14, 14]} /><meshLambertMaterial color="#fff" /></mesh>
-          {/* Pupil — looking slightly right-up */}
-          <mesh position={[0.04, 0.03, 0.13]}><sphereGeometry args={[0.055, 8, 8]} /><meshBasicMaterial color="#111" /></mesh>
-          {/* Pupil highlight */}
-          <mesh position={[0.06, 0.05, 0.145]}><sphereGeometry args={[0.02, 6, 6]} /><meshBasicMaterial color="#fff" /></mesh>
+        <group position={[-0.16, 1.15, 0.28]}>
+          {/* Goggle casing */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.18, 0.18, 0.1, 20]} /><meshLambertMaterial color="#666" /></mesh>
+          {/* Goggle glass rim */}
+          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.16, 0.16, 0.02, 20]} /><meshLambertMaterial color="#444" /></mesh>
+          {/* Eyeball — big white sphere */}
+          <mesh position={[0, 0, 0.06]}><sphereGeometry args={[0.15, 16, 16]} /><meshLambertMaterial color="#fafafa" /></mesh>
+          {/* Iris — brown ring, looking up-right */}
+          <mesh position={[0.04, 0.04, 0.17]}><sphereGeometry args={[0.07, 12, 12]} /><meshLambertMaterial color="#6d4c2a" /></mesh>
+          {/* Pupil — jet black, same position */}
+          <mesh position={[0.04, 0.04, 0.19]}><sphereGeometry args={[0.04, 10, 10]} /><meshBasicMaterial color="#000" /></mesh>
+          {/* Highlight — shiny dot */}
+          <mesh position={[0.06, 0.07, 0.2]}><sphereGeometry args={[0.018, 6, 6]} /><meshBasicMaterial color="#fff" /></mesh>
         </group>
 
-        {/* Right eye — slightly bigger goggle */}
-        <group position={[0.15, 1.18, 0.3]}>
-          <mesh><cylinderGeometry args={[0.18, 0.18, 0.08, 16]} /><meshLambertMaterial color="#777" /></mesh>
+        {/* Right eye — slightly bigger, different pupil direction */}
+        <group position={[0.16, 1.18, 0.28]}>
+          {/* Goggle casing */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.2, 0.2, 0.1, 20]} /><meshLambertMaterial color="#666" /></mesh>
+          {/* Goggle glass rim */}
+          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.18, 0.18, 0.02, 20]} /><meshLambertMaterial color="#444" /></mesh>
           {/* Eyeball */}
-          <mesh position={[0, 0, 0.04]}><sphereGeometry args={[0.16, 14, 14]} /><meshLambertMaterial color="#fff" /></mesh>
-          {/* Pupil — looking slightly left-down for comedic asymmetry */}
-          <mesh position={[-0.04, -0.02, 0.145]}><sphereGeometry args={[0.06, 8, 8]} /><meshBasicMaterial color="#111" /></mesh>
-          {/* Pupil highlight */}
-          <mesh position={[-0.02, 0.01, 0.165]}><sphereGeometry args={[0.02, 6, 6]} /><meshBasicMaterial color="#fff" /></mesh>
+          <mesh position={[0, 0, 0.06]}><sphereGeometry args={[0.17, 16, 16]} /><meshLambertMaterial color="#fafafa" /></mesh>
+          {/* Iris — looking down-left for comedic cross-eyed effect */}
+          <mesh position={[-0.05, -0.03, 0.19]}><sphereGeometry args={[0.08, 12, 12]} /><meshLambertMaterial color="#6d4c2a" /></mesh>
+          {/* Pupil */}
+          <mesh position={[-0.05, -0.03, 0.215]}><sphereGeometry args={[0.045, 10, 10]} /><meshBasicMaterial color="#000" /></mesh>
+          {/* Highlight */}
+          <mesh position={[-0.03, 0.0, 0.225]}><sphereGeometry args={[0.02, 6, 6]} /><meshBasicMaterial color="#fff" /></mesh>
         </group>
 
         {/* Mouth — cute smile / open when talking */}
