@@ -72,15 +72,26 @@ export async function chatWithBot(botId, userMessage) {
       })
     })
     
-    if (!response.ok) return getFallbackResponse(bot, userMessage)
+    if (!response.ok) {
+      console.error(`[BotBrain] API error ${response.status} for ${bot.name}`)
+      return getSmartFallback(bot, userMessage)
+    }
     
     const data = await response.json()
     const reply = data.content || data.message || ''
+    
+    if (!reply || reply.length < 2) {
+      console.error(`[BotBrain] Empty reply for ${bot.name}`)
+      return getSmartFallback(bot, userMessage)
+    }
+    
     parseAndExecuteActions(bot.id, reply)
-    useBotStore.getState().addMemory(bot.id, `Guest: "${userMessage}" — Me: "${reply.replace(/\[.*?\]/g, '').trim()}"`)
-    return reply.replace(/\[.*?\]/g, '').trim()
+    const cleanReply = reply.replace(/\[.*?\]/g, '').replace(/\*[^*]+\*/g, '').trim()
+    useBotStore.getState().addMemory(bot.id, `Guest: "${userMessage}" — Me: "${cleanReply.substring(0, 60)}"`)
+    return cleanReply
   } catch (err) {
-    return getFallbackResponse(bot, userMessage)
+    console.error(`[BotBrain] Chat error for ${bot.name}:`, err.message)
+    return getSmartFallback(bot, userMessage)
   }
 }
 
@@ -148,7 +159,7 @@ Rules:
       })
     })
     
-    if (!response.ok) { playFallback(bot1, bot2); return }
+    if (!response.ok) { console.error(`[BotBrain] Convo API error ${response.status}`); playFallback(bot1, bot2); return }
     
     const data = await response.json()
     const lines = (data.content || '').split('\n').filter(l => l.trim())
@@ -186,19 +197,118 @@ function parseAndExecuteActions(botId, text) {
   }
 }
 
-function getFallbackResponse(bot, msg) {
+function getSmartFallback(bot, msg) {
   parseUserLocationCommand(bot.id, msg)
-  const r = {
-    bartender: ['Coming right up!', 'What\'ll it be?', 'One sec, just finishing this cocktail!'],
-    bouncer: ['Everything alright in here.', 'ID please... just kidding!', 'Keep it cool.'],
-    dj: ['This next one\'s for you!', 'Requests? I got you!', 'Feel that bass!'],
-    waitress: ['I\'ll be right there!', 'Coming through!', 'Your order\'s up!'],
-    customer_slots: ['ONE MORE SPIN!', 'I can feel it, this one\'s a winner!', 'Lady luck, come to Dave!'],
-    customer_tv: ['GOOOAL!', 'Did you see that?! Incredible!', 'Best game this season!'],
-    customer_dancer: ['You should join me!', 'The floor is calling!', 'Can\'t stop, won\'t stop!'],
-    customer_regular: ['Back in the old days...', 'Let me tell you a story...', 'Cheers, mate!'],
+  const m = msg.toLowerCase()
+  
+  // Context-aware responses based on what user said
+  if (m.includes('hello') || m.includes('hi ') || m.includes('hey') || m === 'hi') {
+    const greetings = {
+      bartender: `Hey there! Welcome to the Botlet Bar! What can I get you? 🍺`,
+      bouncer: `Alright, welcome in. Behave yourself and you'll have a great night! 💪`,
+      dj: `Yo! Glad you could make it! The vibes are immaculate tonight! 🎧`,
+      waitress: `Hi! Take a seat anywhere you like, I'll be right with you! 🍽️`,
+      customer_slots: `Hey mate! Come try your luck on the machines! 🎰`,
+      customer_tv: `Hey! You watching the game? It's getting intense! 📺`,
+      customer_dancer: `Hey! Get on the floor, the beat is calling! 🕺`,
+      customer_regular: `Well well, a new face! Pull up a stool, let me tell you about this place... 🍻`,
+      greeter: `Welcome welcome WELCOME! You're going to love it here! 👋`,
+      cleaner: `Oh hello! Mind the wet floor over there, just mopped! 🧹`,
+      policeman: `Evening! Everything's nice and orderly tonight. Enjoy yourself! 👮`,
+    }
+    return greetings[bot.role] || `Hey there! Good to see you!`
   }
-  const list = r[bot.role] || ['Cheers!']
+  
+  if (m.includes('drink') || m.includes('beer') || m.includes('pint') || m.includes('cocktail') || m.includes('order')) {
+    const drinkResponses = {
+      bartender: `Coming right up! We've got a lovely pale ale on tap, or I can mix you something special! 🍺`,
+      waitress: `Sure thing! I'll bring it right over. The house special is our Botlet Brew! 🍸`,
+      customer_regular: `Ooh, get me one too! Mike makes the best old fashioned in town. 🥃`,
+    }
+    return drinkResponses[bot.role] || `I'm not behind the bar, but Mike'll sort you out!`
+  }
+  
+  if (m.includes('name') || m.includes('who are')) {
+    return `I'm ${bot.name}! ${bot.personality.split('.')[0]}. Nice to meet you!`
+  }
+  
+  if (m.includes('how are') || m.includes('how\'s it') || m.includes('what\'s up')) {
+    const moods = {
+      bartender: `Busy night but loving it! The bar's been packed. What'll it be? 🍺`,
+      bouncer: `All quiet on the western front. Just the way I like it. 💪`,
+      dj: `On fire tonight! This playlist is absolute gold! 🎵`,
+      waitress: `Run off my feet but the tips are good! Can I get you anything? 😊`,
+      customer_slots: `One more spin away from the big one, I can FEEL it! 🎰`,
+      customer_tv: `GREAT now that the match is on! Come watch! ⚽`,
+      customer_dancer: `Never better! This beat is everything! 💃`,
+      customer_regular: `Same as always — nursing my pint and watching the world go by. Life's good. 🍻`,
+      greeter: `Fantastic! It's such a lively evening! Everyone's in great spirits! ✨`,
+      cleaner: `Oh you know, keeping busy. Someone's gotta keep this place spotless! 🧹`,
+      policeman: `Can't complain. Quiet patrol tonight, just the way I like it. 👮`,
+    }
+    return moods[bot.role] || `Doing well, thanks for asking!`
+  }
+  
+  // Generic role-specific responses for anything else
+  const roleResponses = {
+    bartender: [
+      `That's what I love about this job — you hear the best stories! What else is on your mind? 🍺`,
+      `Ha! Remind me to tell you about last week. What can I get you? 🍸`,
+      `You know what, you're alright! How about a drink on the house? 🥂`,
+    ],
+    bouncer: [
+      `Interesting... *crosses arms thoughtfully* You make a fair point. 🤔`,
+      `As Nietzsche once said... actually, never mind. Just enjoy your evening! 📚`,
+      `I've seen a lot in this job. Nothing surprises me anymore! 💪`,
+    ],
+    dj: [
+      `That's music to my ears! ...pun intended! 🎵`,
+      `I feel that energy! Let me drop something special for you! 🔊`,
+      `You know what, that reminds me of this absolute banger I should play next! 🎧`,
+    ],
+    waitress: [
+      `Haha! You're one of the fun ones! Can I get you anything else? 🍽️`,
+      `Oh tell me about it! My feet are killing me but the craic is good! 😄`,
+      `Right, I've got three tables waiting but you've got my attention. What's up? 😊`,
+    ],
+    customer_slots: [
+      `That's exactly what I was thinking! Also — LOOK at this machine, it's DUE! 🎰`,
+      `Mate, after this next spin everything changes. I've got a system! 🤑`,
+      `Ha! You should see the jackpot Dave won last week. I mean... uh... 😅`,
+    ],
+    customer_tv: [
+      `Sorry, can we talk at halftime? This game is MENTAL! ⚽`,
+      `DID YOU SEE THAT?! No? Watch the replay! What were you saying? 📺`,
+      `The stats this season are incredible. Did you know... actually, grab a seat! 🏆`,
+    ],
+    customer_dancer: [
+      `Words are great but have you tried DANCING? Join me! 🕺`,
+      `Every problem can be solved on the dance floor. Trust me! 💃`,
+      `That's the spirit! Now watch this move... *breakdances badly* 🔥`,
+    ],
+    customer_regular: [
+      `Ah, that reminds me of the summer of '94... now THAT was a time! 📖`,
+      `You know, in my 30 years coming here, I've learned one thing — never drink and dart. 🎯`,
+      `*leans in* Between you and me, this is the best pub in town. Always has been! 🍻`,
+    ],
+    greeter: [
+      `Oh that's wonderful! Have you tried the nachos? They're to DIE for! ✨`,
+      `I love hearing that! This place really is special, isn't it? 🥰`,
+      `You HAVE to meet Old Pete at the bar. He's got the best stories! 👋`,
+    ],
+    cleaner: [
+      `That's nice dear, mind that wet patch though! 🧹`,
+      `Mm-hmm... *continues sweeping intently* Sorry, what was that? 🎵`,
+      `You know what they say — a clean pub is a happy pub! If only everyone wiped their shoes! 😤`,
+    ],
+    policeman: [
+      `Duly noted, citizen! Everything seems to be in order here. 📋`,
+      `That's reassuring to hear. Carry on and enjoy your evening! 👮`,
+      `Good, good. If you see anything suspicious... well, you won't. This pub's solid. ✅`,
+    ],
+  }
+  
+  const list = roleResponses[bot.role] || [`That's interesting! Tell me more.`, `Ha! Good one! 😄`]
   return list[Math.floor(Math.random() * list.length)]
 }
 
